@@ -6,15 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
-import { useCourses } from "@/contexts/CourseContext";
-import ModuleAccordion from "@/components/courses/ModuleAccordion";
+import { useCourses, Module } from "@/contexts/CourseContext"; // Import Module type
+// import ModuleAccordion from "@/components/courses/ModuleAccordion"; // Remove ModuleAccordion import
 import { Progress } from "@/components/ui/progress";
+import { useState } from "react";
+import { Link } from "react-router-dom"; // Import Link
+import { CheckCircle } from "lucide-react"; // Import CheckCircle icon
 
 const StudentCourseDetail = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const { currentUser } = useUser();
   const { courses, enrollments } = useCourses();
+  // const [selectedModule, setSelectedModule] = useState(null); // Remove selectedModule state
 
   if (!currentUser || !courseId) return null;
 
@@ -105,11 +109,32 @@ const StudentCourseDetail = () => {
             </Card>
 
             <div>
-              <h2 className="text-xl font-semibold mb-4">Course Content</h2>
-              <ModuleAccordion 
-                modules={course.modules} 
-                completedModules={enrollment.completedModules} 
-              />
+              <h2 className="text-xl font-semibold mb-4">Course Modules</h2>
+              {course.modules.length > 0 ? (
+                <div className="space-y-3">
+                  {course.modules.map((module: Module) => {
+                    const isCompleted = enrollment.completedModules.includes(module.id);
+                    return (
+                      <Link
+                        key={module.id}
+                        to={`/student/courses/${courseId}/modules/${module.id}`}
+                        className="block"
+                      >
+                        <Card className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-4 flex items-center justify-between">
+                            <span className="font-medium">{module.title}</span>
+                            {isCompleted && (
+                              <CheckCircle className="h-5 w-5 text-green-500" />
+                            )}
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">No modules available for this course.</p>
+              )}
             </div>
           </div>
 

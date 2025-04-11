@@ -8,6 +8,7 @@ import { useCourses } from "@/contexts/CourseContext";
 import CourseCard from "@/components/courses/CourseCard";
 import { Book, FileCheck, FileText, UserRound } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Link } from "react-router-dom";
 
 const StudentDashboard = () => {
   const { currentUser } = useUser();
@@ -123,9 +124,9 @@ const StudentDashboard = () => {
 
         <Tabs defaultValue="my-courses">
           <TabsList>
-            <TabsTrigger value="my-courses">My Courses</TabsTrigger>
-            <TabsTrigger value="assignments">Assignments</TabsTrigger>
-            <TabsTrigger value="explore">Explore Courses</TabsTrigger>
+            <Link to="/student/dashboard?tab=my-courses"><TabsTrigger value="my-courses">My Courses</TabsTrigger></Link>
+            <Link to="/student/dashboard?tab=assignments"><TabsTrigger value="assignments">Assignments</TabsTrigger></Link>
+            <Link to="/student/dashboard?tab=explore"><TabsTrigger value="explore">Explore Courses</TabsTrigger></Link>
           </TabsList>
           
           <TabsContent value="my-courses" className="space-y-4">

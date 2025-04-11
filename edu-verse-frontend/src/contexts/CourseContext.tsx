@@ -54,6 +54,7 @@ interface CourseContextType {
   getCoursesByInstructor: (instructorId: string) => Course[];
   addResource: (instructorId: string, courseId: string, moduleId: string, resource: Omit<Resource, "id">) => void;
   updateProgress: (userId: string, courseId: string, progress: number, completedModuleId?: string) => void;
+  markModuleComplete: (userId: string, courseId: string, moduleId: string) => void; // Add new function type
 }
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
@@ -298,6 +299,36 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const markModuleComplete = (userId: string, courseId: string, moduleId: string) => {
+    setEnrollments(
+      enrollments.map((enrollment) => {
+        if (enrollment.userId === userId && enrollment.courseId === courseId) {
+          const course = courses.find(c => c.id === courseId);
+          if (!course) return enrollment; // Course not found
+
+          // Check if module is already completed
+          if (enrollment.completedModules.includes(moduleId)) {
+            return enrollment;
+          }
+
+          const updatedCompletedModules = [...enrollment.completedModules, moduleId];
+          const totalModules = course.modules.length;
+          const newProgress = totalModules > 0 
+            ? Math.round((updatedCompletedModules.length / totalModules) * 100) 
+            : 0;
+
+          return {
+            ...enrollment,
+            completedModules: updatedCompletedModules,
+            progress: newProgress,
+          };
+        }
+        return enrollment;
+      })
+    );
+  };
+
+
   return (
     <CourseContext.Provider
       value={{
@@ -307,7 +338,8 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
         getEnrolledCourses,
         getCoursesByInstructor,
         addResource,
-        updateProgress
+        updateProgress,
+        markModuleComplete, // Add function to context value
       }}
     >
       {children}
