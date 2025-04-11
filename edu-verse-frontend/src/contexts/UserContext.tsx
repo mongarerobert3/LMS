@@ -33,6 +33,7 @@ export const UserProvider = ({ children, navigate }: UserProviderProps) => {
   // Mock login functionality - in a real app, this would call an API
   const login = (email: string, password: string) => {
     setIsLoading(true);
+    console.log("Login function called with email:", email, "and password:", password);
     
     // Simulate API call
     setTimeout(() => {
@@ -67,6 +68,8 @@ export const UserProvider = ({ children, navigate }: UserProviderProps) => {
 
       setCurrentUser(user);
       setIsLoading(false);
+
+      console.log("User after login:", user);
 
       if (user) {
         switch (user.role) {

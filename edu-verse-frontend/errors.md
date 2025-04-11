@@ -1,0 +1,91 @@
+react-router-dom.js?v=ef1cdc86:209 Uncaught Error: useNavigate() may be used only in the context of a <Router> component.
+    at invariant (react-router-dom.js?v=ef1cdc86:209:11)
+    at useNavigateUnstable (react-router-dom.js?v=ef1cdc86:3839:34)
+    at useNavigate (react-router-dom.js?v=ef1cdc86:3836:46)
+    at App (App.tsx:31:20)
+    at renderWithHooks (chunk-R6S4VRB5.js?v=ef1cdc86:11548:26)
+    at mountIndeterminateComponent (chunk-R6S4VRB5.js?v=ef1cdc86:14926:21)
+    at beginWork (chunk-R6S4VRB5.js?v=ef1cdc86:15914:22)
+    at HTMLUnknownElement.callCallback2 (chunk-R6S4VRB5.js?v=ef1cdc86:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-R6S4VRB5.js?v=ef1cdc86:3699:24)
+    at invokeGuardedCallback (chunk-R6S4VRB5.js?v=ef1cdc86:3733:39)
+invariant @ react-router-dom.js?v=ef1cdc86:209
+useNavigateUnstable @ react-router-dom.js?v=ef1cdc86:3839
+useNavigate @ react-router-dom.js?v=ef1cdc86:3836
+App @ App.tsx:31
+renderWithHooks @ chunk-R6S4VRB5.js?v=ef1cdc86:11548
+mountIndeterminateComponent @ chunk-R6S4VRB5.js?v=ef1cdc86:14926
+beginWork @ chunk-R6S4VRB5.js?v=ef1cdc86:15914
+callCallback2 @ chunk-R6S4VRB5.js?v=ef1cdc86:3674
+invokeGuardedCallbackDev @ chunk-R6S4VRB5.js?v=ef1cdc86:3699
+invokeGuardedCallback @ chunk-R6S4VRB5.js?v=ef1cdc86:3733
+beginWork$1 @ chunk-R6S4VRB5.js?v=ef1cdc86:19765
+performUnitOfWork @ chunk-R6S4VRB5.js?v=ef1cdc86:19198
+workLoopSync @ chunk-R6S4VRB5.js?v=ef1cdc86:19137
+renderRootSync @ chunk-R6S4VRB5.js?v=ef1cdc86:19116
+performConcurrentWorkOnRoot @ chunk-R6S4VRB5.js?v=ef1cdc86:18678
+workLoop @ chunk-R6S4VRB5.js?v=ef1cdc86:197
+flushWork @ chunk-R6S4VRB5.js?v=ef1cdc86:176
+performWorkUntilDeadline @ chunk-R6S4VRB5.js?v=ef1cdc86:384
+react-router-dom.js?v=ef1cdc86:209 Uncaught Error: useNavigate() may be used only in the context of a <Router> component.
+    at invariant (react-router-dom.js?v=ef1cdc86:209:11)
+    at useNavigateUnstable (react-router-dom.js?v=ef1cdc86:3839:34)
+    at useNavigate (react-router-dom.js?v=ef1cdc86:3836:46)
+    at App (App.tsx:31:20)
+    at renderWithHooks (chunk-R6S4VRB5.js?v=ef1cdc86:11548:26)
+    at mountIndeterminateComponent (chunk-R6S4VRB5.js?v=ef1cdc86:14926:21)
+    at beginWork (chunk-R6S4VRB5.js?v=ef1cdc86:15914:22)
+    at HTMLUnknownElement.callCallback2 (chunk-R6S4VRB5.js?v=ef1cdc86:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-R6S4VRB5.js?v=ef1cdc86:3699:24)
+    at invokeGuardedCallback (chunk-R6S4VRB5.js?v=ef1cdc86:3733:39)
+invariant @ react-router-dom.js?v=ef1cdc86:209
+useNavigateUnstable @ react-router-dom.js?v=ef1cdc86:3839
+useNavigate @ react-router-dom.js?v=ef1cdc86:3836
+App @ App.tsx:31
+renderWithHooks @ chunk-R6S4VRB5.js?v=ef1cdc86:11548
+mountIndeterminateComponent @ chunk-R6S4VRB5.js?v=ef1cdc86:14926
+beginWork @ chunk-R6S4VRB5.js?v=ef1cdc86:15914
+callCallback2 @ chunk-R6S4VRB5.js?v=ef1cdc86:3674
+invokeGuardedCallbackDev @ chunk-R6S4VRB5.js?v=ef1cdc86:3699
+invokeGuardedCallback @ chunk-R6S4VRB5.js?v=ef1cdc86:3733
+beginWork$1 @ chunk-R6S4VRB5.js?v=ef1cdc86:19765
+performUnitOfWork @ chunk-R6S4VRB5.js?v=ef1cdc86:19198
+workLoopSync @ chunk-R6S4VRB5.js?v=ef1cdc86:19137
+renderRootSync @ chunk-R6S4VRB5.js?v=ef1cdc86:19116
+recoverFromConcurrentError @ chunk-R6S4VRB5.js?v=ef1cdc86:18736
+performConcurrentWorkOnRoot @ chunk-R6S4VRB5.js?v=ef1cdc86:18684
+workLoop @ chunk-R6S4VRB5.js?v=ef1cdc86:197
+flushWork @ chunk-R6S4VRB5.js?v=ef1cdc86:176
+performWorkUntilDeadline @ chunk-R6S4VRB5.js?v=ef1cdc86:384
+chunk-R6S4VRB5.js?v=ef1cdc86:14032 The above error occurred in the <App> component:
+
+    at App (http://localhost:8080/src/App.tsx?t=1744381014886:35:22)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-R6S4VRB5.js?v=ef1cdc86:14032
+update.callback @ chunk-R6S4VRB5.js?v=ef1cdc86:14052
+callCallback @ chunk-R6S4VRB5.js?v=ef1cdc86:11248
+commitUpdateQueue @ chunk-R6S4VRB5.js?v=ef1cdc86:11265
+commitLayoutEffectOnFiber @ chunk-R6S4VRB5.js?v=ef1cdc86:17093
+commitLayoutMountEffects_complete @ chunk-R6S4VRB5.js?v=ef1cdc86:17980
+commitLayoutEffects_begin @ chunk-R6S4VRB5.js?v=ef1cdc86:17969
+commitLayoutEffects @ chunk-R6S4VRB5.js?v=ef1cdc86:17920
+commitRootImpl @ chunk-R6S4VRB5.js?v=ef1cdc86:19353
+commitRoot @ chunk-R6S4VRB5.js?v=ef1cdc86:19277
+finishConcurrentRender @ chunk-R6S4VRB5.js?v=ef1cdc86:18760
+performConcurrentWorkOnRoot @ chunk-R6S4VRB5.js?v=ef1cdc86:18718
+workLoop @ chunk-R6S4VRB5.js?v=ef1cdc86:197
+flushWork @ chunk-R6S4VRB5.js?v=ef1cdc86:176
+performWorkUntilDeadline @ chunk-R6S4VRB5.js?v=ef1cdc86:384
+chunk-R6S4VRB5.js?v=ef1cdc86:19413 Uncaught Error: useNavigate() may be used only in the context of a <Router> component.
+    at invariant (react-router-dom.js?v=ef1cdc86:209:11)
+    at useNavigateUnstable (react-router-dom.js?v=ef1cdc86:3839:34)
+    at useNavigate (react-router-dom.js?v=ef1cdc86:3836:46)
+    at App (App.tsx:31:20)
+    at renderWithHooks (chunk-R6S4VRB5.js?v=ef1cdc86:11548:26)
+    at mountIndeterminateComponent (chunk-R6S4VRB5.js?v=ef1cdc86:14926:21)
+    at beginWork (chunk-R6S4VRB5.js?v=ef1cdc86:15914:22)
+    at beginWork$1 (chunk-R6S4VRB5.js?v=ef1cdc86:19753:22)
+    at performUnitOfWork (chunk-R6S4VRB5.js?v=ef1cdc86:19198:20)
+    at workLoopSync (chunk-R6S4VRB5.js?v=ef1cdc86:19137:13)

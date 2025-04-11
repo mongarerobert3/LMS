@@ -30,16 +30,16 @@ const Login = () => {
     login(email, password);
 
     // For demo purposes, show login credentials for each role
-    toast({
-      title: "Demo Logins",
-      description: (
-        <div className="text-sm">
-          <p>Student: student@example.com / password</p>
-          <p>Instructor: instructor@example.com / password</p>
-          <p>Admin: admin@example.com / password</p>
-        </div>
-      ),
-    });
+    // toast({
+    //   title: "Demo Logins",
+    //   description: (
+    //     <div className="text-sm">
+    //       <p>Student: student@example.com / password</p>
+    //       <p>Instructor: instructor@example.com / password</p>
+    //       <p>Admin: admin@example.com / password</p>
+    //     </div>
+    //   ),
+    // });
   };
 
   return (

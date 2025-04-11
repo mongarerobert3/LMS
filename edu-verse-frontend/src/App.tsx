@@ -28,43 +28,51 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const navigate = useNavigate();
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <UserProvider navigate={navigate}>
-          <CourseProvider>
-            <SidebarProvider>
-              <Toaster />
-              <Sonner />
-              <Routes>
-                {/* Auth routes */}
-                <Route path="/login" element={<Login />} />
-
-                {/* Student routes */}
-                <Route path="/student/dashboard" element={<StudentDashboard />} />
-                <Route path="/student/courses" element={<StudentCourses />} />
-                <Route path="/student/courses/:courseId" element={<StudentCourseDetail />} />
-                
-                {/* Instructor routes */}
-                <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
-                <Route path="/instructor/resources" element={<InstructorResources />} />
-                
-                {/* Admin routes */}
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                
-                {/* Redirect root to login */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
-                
-                {/* Redirect any other routes to login */}
-                <Route path="*" element={<Navigate to="/login" replace />} />
-              </Routes>
-            </SidebarProvider>
-          </CourseProvider>
-        </UserProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
+  );
+};
+
+const AppContent = () => {
+  const navigate = useNavigate();
+
+  return (
+    <UserProvider navigate={navigate}>
+      <CourseProvider>
+        <SidebarProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            {/* Auth routes */}
+            <Route path="/login" element={<Login />} />
+
+            {/* Student routes */}
+            <Route path="/student/dashboard" element={<StudentDashboard />} />
+            <Route path="/student/courses" element={<StudentCourses />} />
+            <Route path="/student/courses/:courseId" element={<StudentCourseDetail />} />
+            
+            {/* Instructor routes */}
+            <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
+            <Route path="/instructor/resources" element={<InstructorResources />} />
+            
+            {/* Admin routes */}
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            
+            {/* Redirect root to login */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            
+            {/* Redirect any other routes to login */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </SidebarProvider>
+      </CourseProvider>
+    </UserProvider>
   );
 };
 
