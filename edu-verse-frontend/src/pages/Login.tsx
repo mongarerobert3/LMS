@@ -27,6 +27,7 @@ const Login = () => {
       return;
     }
 
+    console.log("Email:", email, "Password:", password);
     login(email, password);
 
     // For demo purposes, show login credentials for each role

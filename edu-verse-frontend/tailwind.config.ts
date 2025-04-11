@@ -1,5 +1,6 @@
 
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from 'tailwindcss-animate';
 
 export default {
 	darkMode: ["class"],
@@ -57,7 +58,7 @@ export default {
 					blue: "#dd603A",
 					darkblue: "#f79430",
 					purple: "#b05a2a",
-					background: "#000000",
+					background: "#F8FAFC",
 					card: "#FFFFFF",
 					success: "#10B981",
 					warning: "#F59E0B",
@@ -90,7 +91,7 @@ export default {
 				},
 				'accordion-up': {
 					from: {
-						height: 'var(--radix-accordion-content-height)'
+						height: '0'
 					},
 					to: {
 						height: '0'
@@ -103,5 +104,5 @@ export default {
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [tailwindcssAnimate],
 } satisfies Config;
