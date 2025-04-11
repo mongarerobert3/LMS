@@ -9,12 +9,14 @@ import { useCourses } from "@/contexts/CourseContext";
 import { Module, Resource, Assignment } from "@/contexts/CourseContext"; // Import Assignment type
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import AssignmentItem from "@/components/courses/AssignmentItem"; // Import AssignmentItem
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 const StudentModuleView = () => {
   const { courseId, moduleId } = useParams<{ courseId: string; moduleId: string }>();
   const navigate = useNavigate();
   const { currentUser } = useUser();
-  const { courses, enrollments, markModuleComplete } = useCourses(); // Get enrollments and markModuleComplete
+  const { courses, enrollments, toggleModuleCompletion } = useCourses(); // Use toggleModuleCompletion
+  const { toast } = useToast(); // Get toast function
   const [currentResource, setCurrentResource] = useState<Resource | null>(null);
 
   const course = courses.find((c) => c.id === courseId);
@@ -49,9 +51,13 @@ const StudentModuleView = () => {
     );
   }
 
-  const handleMarkComplete = () => {
-    if (currentUser && courseId && moduleId && !isModuleCompleted) {
-      markModuleComplete(currentUser.id, courseId, moduleId);
+  const handleToggleComplete = () => { // Renamed handler
+    if (currentUser && courseId && moduleId) {
+      toggleModuleCompletion(currentUser.id, courseId, moduleId);
+      // Add toast notification here if marking complete
+      if (!isModuleCompleted) {
+        toast({ title: "Module Complete!", description: `Great job completing ${module?.title}!` });
+      }
     }
   };
 
@@ -109,10 +115,10 @@ const StudentModuleView = () => {
 
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold tracking-tight">{module.title}</h1>
-          <Button onClick={handleMarkComplete} disabled={isModuleCompleted}>
+          <Button onClick={handleToggleComplete}>
             {isModuleCompleted ? (
               <>
-                <CheckCircle className="h-4 w-4 mr-2" /> Completed
+                <CheckCircle className="h-4 w-4 mr-2 text-green-500" /> Mark Incomplete
               </>
             ) : (
               "Mark as Complete"
@@ -121,9 +127,9 @@ const StudentModuleView = () => {
         </div>
         {/* <p className="text-muted-foreground">{module.description}</p> */} {/* Removed description */}
 
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col md:flex-row gap-6"> {/* Changed lg:flex-row to md:flex-row */}
           {/* Main Content Area (Resource Viewer) */}
-          <div className="lg:w-3/4 space-y-6">
+          <div className="md:w-3/4 space-y-6"> {/* Changed lg:w-3/4 to md:w-3/4 */}
              {renderResourceContent()}
             {/* Placeholder for Discussion Forum */}
             <Card>
@@ -138,8 +144,8 @@ const StudentModuleView = () => {
             </Card>
           </div>
 
-          {/* Right Sidebar (Resources List) */}
-          <div className="lg:w-1/4">
+          {/* Right Sidebar (Resources List & Assignments) */}
+          <div className="md:w-1/4 space-y-6"> {/* Changed lg:w-1/4 to md:w-1/4 and added space-y-6 */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Module Resources</CardTitle>

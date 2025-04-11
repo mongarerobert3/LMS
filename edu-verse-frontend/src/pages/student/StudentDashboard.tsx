@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react"; // Import useState, useEffect
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,15 +9,44 @@ import CourseCard from "@/components/courses/CourseCard";
 import { Book, FileCheck, FileText, UserRound } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
+// import SermonCard from "@/components/dashboard/SermonCard"; // Remove SermonCard import
+
+// --- Verse of the Day Feature ---
+const inspirationalVerses = [
+  "I can do all things through Christ who strengthens me. - Philippians 4:13",
+  "For I know the plans I have for you, declares the Lord, plans for welfare and not for evil, to give you a future and a hope. - Jeremiah 29:11",
+  "Trust in the Lord with all your heart, and do not lean on your own understanding. - Proverbs 3:5",
+  "The Lord is my shepherd; I shall not want. - Psalm 23:1",
+  "Be strong and courageous. Do not be frightened, and do not be dismayed, for the Lord your God is with you wherever you go. - Joshua 1:9",
+  "Commit your work to the Lord, and your plans will be established. - Proverbs 16:3",
+];
+
+const VERSE_ROTATION_INTERVAL = 180000; // 3 minutes in milliseconds
+// --- End Verse of the Day Feature ---
 
 const StudentDashboard = () => {
   const { currentUser } = useUser();
   const { courses, enrollments, getEnrolledCourses } = useCourses();
+  const [currentVerseIndex, setCurrentVerseIndex] = useState(0); // State for verse index
+
+  // --- Verse of the Day Logic ---
+  useEffect(() => {
+    // Set initial verse randomly
+    setCurrentVerseIndex(Math.floor(Math.random() * inspirationalVerses.length));
+
+    // Set interval for rotation
+    const intervalId = setInterval(() => {
+      setCurrentVerseIndex((prevIndex) => (prevIndex + 1) % inspirationalVerses.length);
+    }, VERSE_ROTATION_INTERVAL);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   if (!currentUser) return null;
 
   const enrolledCourses = getEnrolledCourses(currentUser.id);
-  const upcomingAssignments = enrolledCourses.flatMap(course => 
+  const upcomingAssignments = enrolledCourses.flatMap(course =>
     course.modules.flatMap(module => 
       module.assignments.map(assignment => ({
         ...assignment,
@@ -42,12 +71,18 @@ const StudentDashboard = () => {
       <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Welcome back, {currentUser.name}!</h1>
-          <p className="text-muted-foreground">
-            Here's an overview of your learning progress and upcoming assignments.
-          </p>
+          {/* Removed overview text */}
+           {/* Verse of the Day Display */}
+           <div className="mt-3"> {/* Added margin top for spacing */}
+             <span className="text-xs uppercase tracking-wide text-yellow-700">Verse of the Day</span>
+             <p className="text-sm text-muted-foreground italic mt-1">
+               "{inspirationalVerses[currentVerseIndex]}"
+             </p>
+           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Responsive grid for stats cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -129,8 +164,10 @@ const StudentDashboard = () => {
             <Link to="/student/dashboard?tab=explore"><TabsTrigger value="explore">Explore Courses</TabsTrigger></Link>
           </TabsList>
           
-          <TabsContent value="my-courses" className="space-y-4">
-            <h2 className="text-xl font-semibold mt-6">Course Progress</h2>
+          <TabsContent value="my-courses" className="space-y-8"> {/* Increased spacing */}
+            {/* Sermon Card Removed */}
+
+            <h2 className="text-xl font-semibold mt-6">Course Progress</h2> {/* Added mt-6 back */}
             
             {enrolledCourses.length > 0 ? (
               <div className="space-y-4">
@@ -158,7 +195,8 @@ const StudentDashboard = () => {
             <h2 className="text-xl font-semibold mt-8">Enrolled Courses</h2>
             
             {enrolledCourses.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              /* Responsive grid for enrolled course cards */
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {enrolledCourses.map((course) => (
                   <CourseCard key={course.id} course={course} enrolled={true} />
                 ))}
@@ -208,9 +246,10 @@ const StudentDashboard = () => {
           <TabsContent value="explore" className="space-y-4">
             <h2 className="text-xl font-semibold mt-6">Available Courses</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            /* Responsive grid for available course cards */
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {courses
-                .filter(course => 
+                .filter(course =>
                   !enrollments.some(e => e.courseId === course.id && e.userId === currentUser.id)
                 )
                 .map(course => (

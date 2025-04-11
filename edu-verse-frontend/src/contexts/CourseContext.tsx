@@ -54,7 +54,7 @@ interface CourseContextType {
   getCoursesByInstructor: (instructorId: string) => Course[];
   addResource: (instructorId: string, courseId: string, moduleId: string, resource: Omit<Resource, "id">) => void;
   updateProgress: (userId: string, courseId: string, progress: number, completedModuleId?: string) => void;
-  markModuleComplete: (userId: string, courseId: string, moduleId: string) => void; // Add new function type
+  toggleModuleCompletion: (userId: string, courseId: string, moduleId: string) => void; // Renamed function type
 }
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
@@ -299,22 +299,37 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const markModuleComplete = (userId: string, courseId: string, moduleId: string) => {
+  const toggleModuleCompletion = (userId: string, courseId: string, moduleId: string) => {
+    let courseCompleted = false; // Flag to check if the course is completed
+    let completedCourseTitle = ""; // Store title for potential badge logic
+
     setEnrollments(
       enrollments.map((enrollment) => {
         if (enrollment.userId === userId && enrollment.courseId === courseId) {
           const course = courses.find(c => c.id === courseId);
-          if (!course) return enrollment; // Course not found
+          if (!course) return enrollment;
 
-          // Check if module is already completed
-          if (enrollment.completedModules.includes(moduleId)) {
-            return enrollment;
+          let updatedCompletedModules: string[];
+          const isCurrentlyCompleted = enrollment.completedModules.includes(moduleId);
+
+          if (isCurrentlyCompleted) {
+            // Mark as incomplete
+            updatedCompletedModules = enrollment.completedModules.filter(id => id !== moduleId);
+          } else {
+            // Mark as complete
+            updatedCompletedModules = [...enrollment.completedModules, moduleId];
+            // Check if this completion finishes the course
+            if (updatedCompletedModules.length === course.modules.length) {
+               courseCompleted = true;
+               completedCourseTitle = course.title;
+               // TODO: Add badge awarding logic here later, potentially calling a function from UserContext
+               console.log(`Course "${completedCourseTitle}" completed by user ${userId}! Award badge.`);
+            }
           }
 
-          const updatedCompletedModules = [...enrollment.completedModules, moduleId];
           const totalModules = course.modules.length;
-          const newProgress = totalModules > 0 
-            ? Math.round((updatedCompletedModules.length / totalModules) * 100) 
+          const newProgress = totalModules > 0
+            ? Math.round((updatedCompletedModules.length / totalModules) * 100)
             : 0;
 
           return {
@@ -326,6 +341,9 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
         return enrollment;
       })
     );
+
+     // If course was completed, potentially trigger badge logic (outside map)
+     // if (courseCompleted) { ... }
   };
 
 
@@ -339,7 +357,7 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
         getCoursesByInstructor,
         addResource,
         updateProgress,
-        markModuleComplete, // Add function to context value
+        toggleModuleCompletion, // Updated function name
       }}
     >
       {children}

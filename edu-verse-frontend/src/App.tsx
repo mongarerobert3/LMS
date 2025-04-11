@@ -16,7 +16,8 @@ import Login from "./pages/Login";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import StudentCourses from "./pages/student/StudentCourses";
 import StudentCourseDetail from "./pages/student/StudentCourseDetail";
-import StudentModuleView from "./pages/student/StudentModuleView"; // Add import for the new component
+import StudentModuleView from "./pages/student/StudentModuleView";
+import StudentSettings from "./pages/student/StudentSettings"; // Import Settings page
 
 // Instructor pages
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
@@ -57,7 +58,8 @@ const AppContent = () => {
                 <Route path="/student/dashboard" element={<StudentDashboard />} />
                 <Route path="/student/courses" element={<StudentCourses />} />
                 <Route path="/student/courses/:courseId" element={<StudentCourseDetail />} />
-                <Route path="/student/courses/:courseId/modules/:moduleId" element={<StudentModuleView />} /> {/* Add route for module view */}
+                <Route path="/student/courses/:courseId/modules/:moduleId" element={<StudentModuleView />} />
+                <Route path="/student/settings" element={<StudentSettings />} /> {/* Add route for settings */}
                 
                 {/* Instructor routes */}
                 <Route path="/instructor/dashboard" element={<InstructorDashboard />} />

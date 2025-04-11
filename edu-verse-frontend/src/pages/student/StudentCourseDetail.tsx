@@ -68,8 +68,8 @@ const StudentCourseDetail = () => {
           Back to Courses
         </Button>
 
-        <div className="flex flex-col lg:flex-row lg:items-start gap-6">
-          <div className="lg:w-3/4">
+        <div className="flex flex-col md:flex-row md:items-start gap-6"> {/* Changed lg: to md: */}
+          <div className="md:w-3/4"> {/* Changed lg: to md: */}
             <div className="mb-6">
               <h1 className="text-2xl font-bold tracking-tight mb-2">{course.title}</h1>
               <p className="text-muted-foreground">{course.description}</p>
@@ -138,7 +138,7 @@ const StudentCourseDetail = () => {
             </div>
           </div>
 
-          <div className="lg:w-1/4">
+          <div className="md:w-1/4"> {/* Changed lg: to md: */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Course Information</CardTitle>

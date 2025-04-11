@@ -43,6 +43,7 @@ const AppSidebar = () => {
         return [
           { title: "Dashboard", icon: Home, path: "/student/dashboard" },
           { title: "My Courses", icon: BookOpen, path: "/student/courses" },
+          { title: "Sunday Sermon", icon: Video, path: "#" }, // Added Sermon link
         ];
       case "instructor":
         return [
