@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react"; // Import useState, useEffect
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,9 +7,9 @@ import { useCourses } from "@/contexts/CourseContext";
 import CourseCard from "@/components/courses/CourseCard";
 import { Book, FileCheck, FileText, UserRound, Award } from "lucide-react"; // Import Award icon
 import { Progress } from "@/components/ui/progress";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
 import BadgeListPanel from "@/components/badges/BadgeListPanel"; // Import BadgeListPanel
-// import SermonCard from "@/components/dashboard/SermonCard"; // Remove SermonCard import
+import { Button } from "@/components/ui/button"; // Import Button
 
 // --- Verse of the Day Feature ---
 const inspirationalVerses = [
@@ -28,6 +27,7 @@ const VERSE_ROTATION_INTERVAL = 180000; // 3 minutes in milliseconds
 const StudentDashboard = () => {
   const { currentUser } = useUser();
   const { courses, enrollments, getEnrolledCourses } = useCourses();
+  const navigate = useNavigate(); // Get navigate function
   const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
   const [isBadgePanelOpen, setIsBadgePanelOpen] = useState(false); // State for panel visibility
 
@@ -49,7 +49,7 @@ const StudentDashboard = () => {
 
   const enrolledCourses = getEnrolledCourses(currentUser.id);
   const upcomingAssignments = enrolledCourses.flatMap(course =>
-    course.modules.flatMap(module => 
+    course.modules.flatMap(module =>
       module.assignments.map(assignment => ({
         ...assignment,
         courseTitle: course.title
@@ -68,14 +68,17 @@ const StudentDashboard = () => {
     };
   });
 
+  // Determine which course progress to show
+  const courseToShowId = currentUser?.pinnedCourseId ?? currentUser?.lastAccessedCourseId;
+  const progressToShow = courseProgress.find(p => p.courseId === courseToShowId);
+
   return (
     <AppLayout requiredRole="student">
       <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Welcome back, {currentUser.name}!</h1>
-          {/* Removed overview text */}
-           {/* Verse of the Day Display */}
-           <div className="mt-3"> {/* Added margin top for spacing */}
+          {/* Verse of the Day Display */}
+           <div className="mt-3">
              <span className="text-xs uppercase tracking-wide text-yellow-700">Verse of the Day</span>
              <p className="text-sm text-muted-foreground italic mt-1">
                "{inspirationalVerses[currentVerseIndex]}"
@@ -95,8 +98,8 @@ const StudentDashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold">{enrolledCourses.length}</div>
               <p className="text-xs text-muted-foreground">
-                {enrolledCourses.length > 0 
-                  ? "Continue your learning journey" 
+                {enrolledCourses.length > 0
+                  ? "Continue your learning journey"
                   : "Explore courses to enroll"}
               </p>
             </CardContent>
@@ -117,9 +120,8 @@ const StudentDashboard = () => {
               </p>
             </CardContent>
           </Card>
-          
-          {/* Completed Modules Card Removed */}
-          
+
+          {/* Pending Assignments Card */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -130,14 +132,15 @@ const StudentDashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold">{upcomingAssignments.length}</div>
               <p className="text-xs text-muted-foreground">
-                {upcomingAssignments.length > 0 
-                  ? "Due in the next few days" 
+                {upcomingAssignments.length > 0
+                  ? "Due in the next few days"
                   : "No pending assignments"}
               </p>
             </CardContent>
           </Card>
-          
-          <Card>
+
+          {/* Average Progress Card - Removed as per focus on single course */}
+          {/* <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Average Progress
@@ -148,14 +151,14 @@ const StudentDashboard = () => {
               <div className="text-2xl font-bold">
                 {enrolledCourses.length > 0
                   ? `${Math.round(
-                      courseProgress.reduce((acc, course) => acc + course.progress, 0) / 
+                      courseProgress.reduce((acc, course) => acc + course.progress, 0) /
                       courseProgress.length
                     )}%`
                   : "0%"}
               </div>
               <p className="text-xs text-muted-foreground">Across all courses</p>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         <Tabs defaultValue="my-courses">
@@ -164,39 +167,46 @@ const StudentDashboard = () => {
             <Link to="/student/dashboard?tab=assignments"><TabsTrigger value="assignments">Assignments</TabsTrigger></Link>
             <Link to="/student/dashboard?tab=explore"><TabsTrigger value="explore">Explore Courses</TabsTrigger></Link>
           </TabsList>
-          
-          <TabsContent value="my-courses" className="space-y-8"> {/* Increased spacing */}
-            {/* Sermon Card Removed */}
 
-            <h2 className="text-xl font-semibold mt-6">Course Progress</h2> {/* Added mt-6 back */}
-            
-            {enrolledCourses.length > 0 ? (
-              <div className="space-y-4">
-                {courseProgress.map((course) => (
-                  <Card key={course.courseId}>
-                    <CardContent className="pt-6">
-                      <div className="flex justify-between items-center mb-2">
-                        <h3 className="font-medium">{course.title}</h3>
-                        <span className="text-sm font-semibold">{course.progress}%</span>
-                      </div>
-                      <Progress value={course.progress} className="h-2" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="pt-6 text-center">
-                  <p className="text-muted-foreground mb-4">You haven't enrolled in any courses yet.</p>
-                  <p className="text-sm">Check out the "Explore Courses" tab to find courses to enroll in.</p>
+          <TabsContent value="my-courses" className="space-y-8">
+            <h2 className="text-xl font-semibold mt-6">Current Focus</h2>
+
+            {progressToShow ? (
+              <Card key={progressToShow.courseId}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">{progressToShow.title}</CardTitle>
+                  <CardDescription>
+                    {currentUser?.pinnedCourseId === progressToShow.courseId
+                      ? "Pinned Course"
+                      : "Last Accessed"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-2">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-semibold">{progressToShow.progress}% Complete</span>
+                  </div>
+                  <Progress value={progressToShow.progress} className="h-2" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4 w-full"
+                    onClick={() => navigate(`/student/courses/${progressToShow.courseId}`)}
+                  >
+                    Continue Learning
+                  </Button>
                 </CardContent>
               </Card>
+            ) : (
+               <Card>
+                 <CardContent className="pt-6 text-center">
+                   <p className="text-muted-foreground">No course currently focused. Pin a course or access one to see its progress here.</p>
+                 </CardContent>
+               </Card>
             )}
-            
+
             <h2 className="text-xl font-semibold mt-8">Enrolled Courses</h2>
-            
+
             {enrolledCourses.length > 0 ? (
-              /* Responsive grid for enrolled course cards */
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {enrolledCourses.map((course) => (
                   <CourseCard key={course.id} course={course} enrolled={true} />
@@ -210,10 +220,10 @@ const StudentDashboard = () => {
               </Card>
             )}
           </TabsContent>
-          
+
           <TabsContent value="assignments" className="space-y-4">
             <h2 className="text-xl font-semibold mt-6">Upcoming Assignments</h2>
-            
+
             {upcomingAssignments.length > 0 ? (
               <div className="space-y-4">
                 {upcomingAssignments.map((assignment) => (
@@ -243,11 +253,10 @@ const StudentDashboard = () => {
               </Card>
             )}
           </TabsContent>
-          
+
           <TabsContent value="explore" className="space-y-4">
             <h2 className="text-xl font-semibold mt-6">Available Courses</h2>
-            
-            /* Responsive grid for available course cards */
+
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {courses
                 .filter(course =>

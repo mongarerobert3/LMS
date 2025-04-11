@@ -1,42 +1,26 @@
+ Change "Sunday Sermon" in the menu bar to "Bible Puzzle" that when clicked Generates a Bible-based crossword puzzle that is visually designed to appear as a toast/modal in the center of the screen, with the rest of the UI (dashboard or current page) blurred behind it. and of course a saving button to save the crossword and finish later and a small cross on the top right to close the crossword.
 
-The current implementation renders badges in a small toast, but we want to rework this to create a powerful, motivational, and visually stunning experience for the user.
+Crossword should:
+- Be titled: "Crossword of Faith"
+- Contain 10 clues (5 Across, 5 Down)
+- Mix difficulty: 4 easy, 4 medium, 2 hard
+- Be based on both Old and New Testament: include biblical characters, parables, books, and key events
+- Each clue must have a clear, short hint
+- Provide the final list like:
 
-🎯 TASK: Implement a **badge display system** with the following features:
 
----
+Also include a structured grid format:
+- 2D Array representation of the crossword layout
+- Clue numbers in the right positions
+- Starting positions (x,y) of each word, its direction (across/down), and the actual answer
 
-### 🥇 1. **Badge Unlock Modal (Center of Screen)**
+Design notes:
+- The crossword must render inside a large, centered toast/modal.
+- Background behind the crossword must be blurred.
+- Include a close button (top right) to exit the crossword and return to dashboard (unblur).
+- Puzzle should be scrollable on mobile and show share button + a message: “Challenge a friend!”
+- Add a placeholder image of a scroll or Bible on top for decoration.
 
-- When a user unlocks a badge:
-  - Show a **centered modal** with:
-    - A **moderately large badge image/icon** .
-    - A **motivational message** (e.g., “✨ Congratulations, you completed a 7-day streak! Keep shining 🙌”).
-    - Title and short description.
-  - Add a **subtle blurred background** while the modal is active.
-  - Include a small `×` (close) icon in the **top-right** to dismiss the modal.
-    - When clicked, **remove the blur** and return to the dashboard or active course.
+Mock any backend functionality where needed. this is the gemini key if we will use it to generate the easy, hard and medium puzzles - AIzaSyBJ6RPUuxiS7nZgyb-K9Xe-TyZcpln4xT4
 
----
-
-### 📈 2. **Badge Count in Course Progress Section**
-
-- In the user’s dashboard (or course progress overview):
-  - Next to the “Assignments” section, add a **badge icon with a counter**.
-  - This counter shows how many badges the user has earned.
-  - Clicking this icon opens a **toast-like scrollable panel** showing:
-    - A **vertical list** of earned badges with:
-      - Badge image
-      - Title
-      - Short message
-      - `📤 Share` button (mocked for now)
-
----
-
-### 🛠 3. **Implementation Notes**
-
-- Store badge data in `UserContext` as mock data (as backend isn’t ready yet).
-- Design should feel warm, spiritual, and rewarding.
-- Style badges with **rounded gold/silver trims**, **soft gradients**, and **encouraging messages**.
-- Ensure the badge modal feels like a **celebration** — a moment of achievement.
-- Use any spiritual affirmations or Bible verse references to add depth to the congratulatory messages.
-
+Keep it fun, inspiring, and church-friendly.

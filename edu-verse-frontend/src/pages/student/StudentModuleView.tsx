@@ -3,39 +3,48 @@ import { useParams, useNavigate, Link, Navigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, FileText, Video, CheckCircle } from "lucide-react"; // Import CheckCircle
-import { useUser, Badge } from "@/contexts/UserContext"; // Import Badge from UserContext
+import { ArrowLeft, FileText, Video, CheckCircle } from "lucide-react";
+import { useUser, Badge } from "@/contexts/UserContext"; // Correctly import Badge from UserContext
 import { useCourses } from "@/contexts/CourseContext";
-import { Module, Resource, Assignment } from "@/contexts/CourseContext"; // Import Assignment type
+import { Module, Resource, Assignment } from "@/contexts/CourseContext";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import AssignmentItem from "@/components/courses/AssignmentItem"; // Import AssignmentItem
-import { useToast } from "@/hooks/use-toast"; // Import useToast
-import BadgeDisplayModal from "@/components/badges/BadgeDisplayModal"; // Import Badge Modal
+import AssignmentItem from "@/components/courses/AssignmentItem";
+import { useToast } from "@/hooks/use-toast";
+import BadgeDisplayModal from "@/components/badges/BadgeDisplayModal";
 
 const StudentModuleView = () => {
   const { courseId, moduleId } = useParams<{ courseId: string; moduleId: string }>();
   const navigate = useNavigate();
-  const { currentUser } = useUser();
-  const { courses, enrollments, toggleModuleCompletion } = useCourses(); // Use toggleModuleCompletion
-  const { toast } = useToast(); // Get toast function
+  const { currentUser, setLastAccessedCourse } = useUser(); // Get setLastAccessedCourse
+  const { courses, enrollments, toggleModuleCompletion } = useCourses();
+  const { toast } = useToast();
   const [currentResource, setCurrentResource] = useState<Resource | null>(null);
-  const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false); // State for modal
-  const [earnedBadgeToShow, setEarnedBadgeToShow] = useState<Badge | null>(null); // State for modal badge data
+  const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
+  const [earnedBadgeToShow, setEarnedBadgeToShow] = useState<Badge | null>(null);
 
   const course = courses.find((c) => c.id === courseId);
   const module = course?.modules.find((m) => m.id === moduleId);
   const enrollment = enrollments.find(e => e.userId === currentUser?.id && e.courseId === courseId);
+  // Calculate completion status *after* ensuring enrollment exists
   const isModuleCompleted = enrollment?.completedModules.includes(moduleId ?? '') ?? false;
 
+  // Effect to set the initial resource view
   useEffect(() => {
-    // Set the first resource as the default view
     if (module?.resources && module.resources.length > 0) {
       setCurrentResource(module.resources[0]);
     } else {
-      setCurrentResource(null); // Reset if module has no resources
+      setCurrentResource(null);
     }
   }, [module]);
 
+  // Effect to set the last accessed course
+  useEffect(() => {
+    if (currentUser && courseId) {
+      setLastAccessedCourse(currentUser.id, courseId);
+    }
+  }, [currentUser, courseId, setLastAccessedCourse]);
+
+  // Guard clauses must come after hooks
   if (!currentUser) {
     return <Navigate to="/login" replace />;
   }
@@ -54,28 +63,52 @@ const StudentModuleView = () => {
     );
   }
 
-  const handleToggleComplete = () => { // Renamed handler
-    if (currentUser && courseId && moduleId) {
-      toggleModuleCompletion(currentUser.id, courseId, moduleId);
-      // Add more engaging toast notification & trigger badge modal if marking complete
-      if (!isModuleCompleted) {
-        toast({
-          title: "✨ Module Complete!",
-          description: `Well done, disciple of faith! You've completed ${module?.title}. Keep walking in truth!`,
-          variant: "default",
-        });
+  // Ensure enrollment exists before proceeding (though AppLayout might handle this)
+   if (!enrollment) {
+     // Or redirect to course page / show an error
+     return (
+       <AppLayout requiredRole="student">
+         <div className="text-center py-10">
+           <h2 className="text-xl font-semibold mb-2">Enrollment not found</h2>
+           <p className="text-gray-500 mb-4">Could not find your enrollment for this course.</p>
+           <Button onClick={() => navigate(`/student/courses/${courseId}`)}>
+             Back to Course
+           </Button>
+         </div>
+       </AppLayout>
+     );
+   }
 
-        // --- Simulate earning 'Faithful Starter' badge (ID 'b1') ---
-        // In a real app, this logic would be tied to actual badge conditions
-        const faithfulStarterBadge = currentUser.badges.find(b => b.id === 'b1');
-        if (faithfulStarterBadge) {
-           // Simulate earning it if not already earned (for demo)
-           const badgeToShow = { ...faithfulStarterBadge, earned: true, dateEarned: new Date().toISOString() };
-           setEarnedBadgeToShow(badgeToShow);
-           setIsBadgeModalOpen(true);
-           // TODO: Need a way to persist this earned status in UserContext
+
+  const handleToggleComplete = () => {
+    if (currentUser && courseId && moduleId && enrollment) {
+      const wasFirstCompletion = !isModuleCompleted && enrollment.completedModules.length === 0;
+      const earnedCourseBadgeId = toggleModuleCompletion(currentUser.id, courseId, moduleId);
+
+      let badgeIdToShow: string | null = null;
+
+      if (earnedCourseBadgeId) {
+        badgeIdToShow = earnedCourseBadgeId;
+      } else if (wasFirstCompletion) {
+        badgeIdToShow = 'b1'; // "Faithful Starter"
+      }
+
+      if (!isModuleCompleted) {
+         toast({
+           title: "✨ Module Complete!",
+           description: `Well done, disciple of faith! You've completed ${module?.title}. Keep walking in truth!`,
+           variant: "default",
+         });
+      }
+
+      if (badgeIdToShow) {
+        const badgeData = currentUser.badges.find(b => b.id === badgeIdToShow);
+        if (badgeData) {
+          const badgeToShow = { ...badgeData, earned: true, dateEarned: new Date().toISOString() };
+          setEarnedBadgeToShow(badgeToShow);
+          setIsBadgeModalOpen(true);
+          // TODO: Persist earned status
         }
-        // --- End Simulation ---
       }
     }
   };
@@ -84,8 +117,6 @@ const StudentModuleView = () => {
     if (!currentResource) {
       return <div className="flex items-center justify-center h-[450px] bg-gray-100 rounded-md"><p>Select a resource to view.</p></div>;
     }
-
-    // Improved rendering with dedicated viewports
     if (currentResource.url.endsWith('.pdf')) {
       return (
         <div className="border rounded-md overflow-hidden h-[600px]">
@@ -107,7 +138,6 @@ const StudentModuleView = () => {
         </AspectRatio>
       );
     } else {
-      // Default to a link for other types, maybe show a placeholder?
       return (
          <div className="flex flex-col items-center justify-center h-[450px] bg-gray-100 rounded-md">
             <FileText className="h-16 w-16 text-gray-400 mb-4" />
@@ -144,13 +174,10 @@ const StudentModuleView = () => {
             )}
           </Button>
         </div>
-        {/* <p className="text-muted-foreground">{module.description}</p> */} {/* Removed description */}
 
-        <div className="flex flex-col md:flex-row gap-6"> {/* Changed lg:flex-row to md:flex-row */}
-          {/* Main Content Area (Resource Viewer) */}
-          <div className="md:w-3/4 space-y-6"> {/* Changed lg:w-3/4 to md:w-3/4 */}
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="md:w-3/4 space-y-6">
              {renderResourceContent()}
-            {/* Placeholder for Discussion Forum */}
             <Card>
                 <CardHeader>
                     <CardTitle>Discussion</CardTitle>
@@ -163,8 +190,7 @@ const StudentModuleView = () => {
             </Card>
           </div>
 
-          {/* Right Sidebar (Resources List & Assignments) */}
-          <div className="md:w-1/4 space-y-6"> {/* Changed lg:w-1/4 to md:w-1/4 and added space-y-6 */}
+          <div className="md:w-1/4 space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Module Resources</CardTitle>
@@ -192,7 +218,6 @@ const StudentModuleView = () => {
               </CardContent>
             </Card>
 
-            {/* Assignments Card */}
             {module.assignments.length > 0 && (
               <Card>
                 <CardHeader>
@@ -208,7 +233,6 @@ const StudentModuleView = () => {
           </div>
         </div>
       </div>
-      {/* Render Badge Modal */}
       <BadgeDisplayModal
         badge={earnedBadgeToShow}
         isOpen={isBadgeModalOpen}

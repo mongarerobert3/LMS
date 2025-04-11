@@ -1,5 +1,3 @@
-
-import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -12,18 +10,26 @@ import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
 import { Link } from "react-router-dom"; // Import Link
 import { CheckCircle } from "lucide-react"; // Import CheckCircle icon
+import React, { useEffect } from "react"; // Import useEffect
 
 const StudentCourseDetail = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
-  const { currentUser } = useUser();
+  const { currentUser, setLastAccessedCourse } = useUser(); // Get setLastAccessedCourse
   const { courses, enrollments } = useCourses();
   // const [selectedModule, setSelectedModule] = useState(null); // Remove selectedModule state
+
+  // Set last accessed course when component mounts
+  useEffect(() => {
+    if (currentUser && courseId) {
+      setLastAccessedCourse(currentUser.id, courseId);
+    }
+  }, [currentUser, courseId, setLastAccessedCourse]);
 
   if (!currentUser || !courseId) return null;
 
   const course = courses.find((c) => c.id === courseId);
-  
+
   if (!course) {
     return (
       <AppLayout requiredRole="student">

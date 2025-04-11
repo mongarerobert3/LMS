@@ -21,11 +21,16 @@ import {
   LogOut, 
   Settings, 
   UserPlus, 
-  Users, 
-  Video 
+  Users,
+  Video,
+  Puzzle // Import Puzzle icon
 } from "lucide-react";
 
-const AppSidebar = () => {
+interface AppSidebarProps {
+  openPuzzleModal: () => void; // Add prop type
+}
+
+const AppSidebar = ({ openPuzzleModal }: AppSidebarProps) => { // Destructure prop
   const { currentUser, logout } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,11 +47,12 @@ const AppSidebar = () => {
     switch (currentUser.role) {
       case "student":
         return [
-          { title: "Dashboard", icon: Home, path: "/student/dashboard" },
-          { title: "My Courses", icon: BookOpen, path: "/student/courses" },
-          { title: "Sunday Sermon", icon: Video, path: "#" }, // Added Sermon link
+          { title: "Dashboard", icon: Home, path: "/student/dashboard", action: () => navigate("/student/dashboard") },
+          { title: "My Courses", icon: BookOpen, path: "/student/courses", action: () => navigate("/student/courses") },
+          { title: "Bible Puzzle", icon: Puzzle, path: "#puzzle", action: openPuzzleModal }, // Changed icon to Puzzle
         ];
       case "instructor":
+        // Keep instructor/admin links as they were, or add actions if needed
         return [
           { title: "Dashboard", icon: Home, path: "/instructor/dashboard" },
           { title: "My Courses", icon: BookOpen, path: "/instructor/courses" },
@@ -83,16 +89,16 @@ const AppSidebar = () => {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
-                    asChild
-                    className={location.pathname === item.path ? "bg-sidebar-accent" : ""}
+                    // Use 'asChild' only if the button itself is handling navigation/action
+                    // For puzzle, the button itself triggers the action, no need for asChild or inner button
+                    className={item.path === "#puzzle" ? "" : (location.pathname === item.path ? "bg-sidebar-accent" : "")}
+                    onClick={item.action} // Use the defined action
                   >
-                    <button 
-                      onClick={() => navigate(item.path)}
-                      className="w-full flex items-center"
-                    >
-                      <item.icon className="mr-2 h-5 w-5" />
-                      <span>{item.title}</span>
-                    </button>
+                     {/* Keep button structure for consistency, but action is on SidebarMenuButton */}
+                     <div className="w-full flex items-center">
+                       <item.icon className="mr-2 h-5 w-5" />
+                       <span>{item.title}</span>
+                     </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

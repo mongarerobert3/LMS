@@ -54,7 +54,7 @@ interface CourseContextType {
   getCoursesByInstructor: (instructorId: string) => Course[];
   addResource: (instructorId: string, courseId: string, moduleId: string, resource: Omit<Resource, "id">) => void;
   updateProgress: (userId: string, courseId: string, progress: number, completedModuleId?: string) => void;
-  toggleModuleCompletion: (userId: string, courseId: string, moduleId: string) => void; // Renamed function type
+  toggleModuleCompletion: (userId: string, courseId: string, moduleId: string) => string | null; // Return potential badge ID or null
 }
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
@@ -299,9 +299,8 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const toggleModuleCompletion = (userId: string, courseId: string, moduleId: string) => {
-    let courseCompleted = false; // Flag to check if the course is completed
-    let completedCourseTitle = ""; // Store title for potential badge logic
+  const toggleModuleCompletion = (userId: string, courseId: string, moduleId: string): string | null => {
+    let newlyEarnedCourseBadgeId: string | null = null; // Store ID of badge earned by completing the course
 
     setEnrollments(
       enrollments.map((enrollment) => {
@@ -319,11 +318,11 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
             // Mark as complete
             updatedCompletedModules = [...enrollment.completedModules, moduleId];
             // Check if this completion finishes the course
-            if (updatedCompletedModules.length === course.modules.length) {
-               courseCompleted = true;
-               completedCourseTitle = course.title;
-               // TODO: Add badge awarding logic here later, potentially calling a function from UserContext
-               console.log(`Course "${completedCourseTitle}" completed by user ${userId}! Award badge.`);
+            if (updatedCompletedModules.length === course.modules.length && course.modules.length > 0) {
+               // Award "Completed in Christ" badge (ID 'b3')
+               newlyEarnedCourseBadgeId = 'b3';
+               console.log(`Course "${course.title}" completed by user ${userId}! Award badge 'b3'.`);
+               // In a real app, you'd call a function here to update the user's badge status persistently.
             }
           }
 
@@ -342,8 +341,9 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
       })
     );
 
-     // If course was completed, potentially trigger badge logic (outside map)
-     // if (courseCompleted) { ... }
+     // This state update happens asynchronously, so we return the badge ID directly
+     // if it was determined within the synchronous part of the map.
+     return newlyEarnedCourseBadgeId;
   };
 
 

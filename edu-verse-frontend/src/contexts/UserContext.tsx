@@ -9,7 +9,9 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
-  badges: Badge[]; // Add badges array
+  badges: Badge[];
+  pinnedCourseId: string | null; // Added for pinned course
+  lastAccessedCourseId: string | null; // Added for fallback
 }
 
 // --- Badge System ---
@@ -31,6 +33,7 @@ const mockBadges: Badge[] = [
   { id: "b4", title: "Prayer Partner", description: "Engaged in discussion forum 5 times.", message: "🙏 Fellowship strengthens faith. Thank you for encouraging others!", icon: "🤝", earned: false },
   { id: "b5", title: "Resource Explorer", description: "Viewed 10 different resources.", message: "💡 Seeking knowledge is a virtue. Keep exploring the riches of His word!", icon: "🗺️", earned: false },
   { id: "b6", title: "Assignment Achiever", description: "Submitted 3 assignments.", message: "✅ Diligence bears fruit! Your efforts are seen.", icon: "✍️", earned: false },
+  { id: "b7", title: "Puzzle Master", description: "Successfully completed a Bible Puzzle!", message: "🧩 Excellent work! 'Your word is a lamp to my feet and a light to my path.' - Psalm 119:105", icon: "🧠", earned: false }, // Added Puzzle Badge
 ];
 // --- End Badge System ---
 
@@ -41,6 +44,8 @@ interface UserContextType {
   login: (email: string, password: string) => void;
   logout: () => void;
   isLoading: boolean;
+  setPinnedCourse: (userId: string, courseId: string | null) => void; // Added function type
+  setLastAccessedCourse: (userId: string, courseId: string) => void; // Added function type
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -71,8 +76,9 @@ export const UserProvider = ({ children, navigate }: UserProviderProps) => {
           email: "student@example.com",
           role: "student",
           avatar: "/placeholder.svg",
-          // Assign some mock badges (can be dynamic later)
-          badges: mockBadges.map((b, i) => ({ ...b, earned: i < 1 })) // Earn first badge for demo
+          badges: mockBadges.map((b, i) => ({ ...b, earned: i < 1 })), // Earn first badge for demo
+          pinnedCourseId: null, // Initialize
+          lastAccessedCourseId: null // Initialize
         };
       } else if (email === "instructor@example.com" && password === "password") {
         user = {
@@ -81,7 +87,9 @@ export const UserProvider = ({ children, navigate }: UserProviderProps) => {
           email: "instructor@example.com",
           role: "instructor",
           avatar: "/placeholder.svg",
-          badges: [] // Instructors might not earn student badges
+          badges: [],
+          pinnedCourseId: null,
+          lastAccessedCourseId: null
         };
       } else if (email === "admin@example.com" && password === "password") {
         user = {
@@ -90,7 +98,9 @@ export const UserProvider = ({ children, navigate }: UserProviderProps) => {
           email: "admin@example.com",
           role: "admin",
           avatar: "/placeholder.svg",
-          badges: [] // Admins might not earn student badges
+          badges: [],
+          pinnedCourseId: null,
+          lastAccessedCourseId: null
         };
       }
 
@@ -121,8 +131,42 @@ export const UserProvider = ({ children, navigate }: UserProviderProps) => {
     setCurrentUser(null);
   };
 
+  // Mock function to set pinned course
+  const setPinnedCourse = (userId: string, courseId: string | null) => {
+    setCurrentUser(prevUser => {
+      if (prevUser && prevUser.id === userId) {
+        return { ...prevUser, pinnedCourseId: courseId };
+      }
+      return prevUser;
+    });
+     console.log(`User ${userId} pinned course ${courseId}`);
+  };
+
+  // Mock function to set last accessed course
+  const setLastAccessedCourse = (userId: string, courseId: string) => {
+     setCurrentUser(prevUser => {
+       if (prevUser && prevUser.id === userId) {
+         // Only update if it's different from the current last accessed
+         if (prevUser.lastAccessedCourseId !== courseId) {
+            console.log(`User ${userId} last accessed course ${courseId}`);
+            return { ...prevUser, lastAccessedCourseId: courseId };
+         }
+       }
+       return prevUser;
+     });
+  };
+
+
   return (
-    <UserContext.Provider value={{ currentUser, setCurrentUser, login, logout, isLoading }}>
+    <UserContext.Provider value={{
+        currentUser,
+        setCurrentUser,
+        login,
+        logout,
+        isLoading,
+        setPinnedCourse,
+        setLastAccessedCourse
+      }}>
       {children}
     </UserContext.Provider>
   );
