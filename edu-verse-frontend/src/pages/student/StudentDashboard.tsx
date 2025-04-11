@@ -6,9 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from "@/contexts/UserContext";
 import { useCourses } from "@/contexts/CourseContext";
 import CourseCard from "@/components/courses/CourseCard";
-import { Book, FileCheck, FileText, UserRound } from "lucide-react";
+import { Book, FileCheck, FileText, UserRound, Award } from "lucide-react"; // Import Award icon
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
+import BadgeListPanel from "@/components/badges/BadgeListPanel"; // Import BadgeListPanel
 // import SermonCard from "@/components/dashboard/SermonCard"; // Remove SermonCard import
 
 // --- Verse of the Day Feature ---
@@ -27,7 +28,8 @@ const VERSE_ROTATION_INTERVAL = 180000; // 3 minutes in milliseconds
 const StudentDashboard = () => {
   const { currentUser } = useUser();
   const { courses, enrollments, getEnrolledCourses } = useCourses();
-  const [currentVerseIndex, setCurrentVerseIndex] = useState(0); // State for verse index
+  const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
+  const [isBadgePanelOpen, setIsBadgePanelOpen] = useState(false); // State for panel visibility
 
   // --- Verse of the Day Logic ---
   useEffect(() => {
@@ -81,8 +83,8 @@ const StudentDashboard = () => {
            </div>
         </div>
 
-        {/* Responsive grid for stats cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Responsive grid for stats cards - adjusted to 3 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -99,25 +101,24 @@ const StudentDashboard = () => {
               </p>
             </CardContent>
           </Card>
-          
-          <Card>
+
+          {/* Badges Card - Added */}
+          <Card className="cursor-pointer hover:bg-gray-50" onClick={() => setIsBadgePanelOpen(true)}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Completed Modules
+                Badges Earned
               </CardTitle>
-              <FileCheck className="h-4 w-4 text-muted-foreground" />
+              <Award className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {enrollments
-                  .filter(e => e.userId === currentUser.id)
-                  .reduce((acc, e) => acc + e.completedModules.length, 0)}
-              </div>
+              <div className="text-2xl font-bold">{currentUser?.badges?.filter(b => b.earned).length ?? 0}</div>
               <p className="text-xs text-muted-foreground">
-                Across all your enrolled courses
+                View your achievements
               </p>
             </CardContent>
           </Card>
+          
+          {/* Completed Modules Card Removed */}
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -260,6 +261,12 @@ const StudentDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+      {/* Render Badge Panel */}
+      <BadgeListPanel
+        badges={currentUser?.badges ?? []}
+        isOpen={isBadgePanelOpen}
+        onClose={() => setIsBadgePanelOpen(false)}
+      />
     </AppLayout>
   );
 };

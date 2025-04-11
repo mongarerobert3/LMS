@@ -9,7 +9,31 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
+  badges: Badge[]; // Add badges array
 }
+
+// --- Badge System ---
+export interface Badge {
+  id: string;
+  title: string;
+  description: string;
+  message: string;
+  icon: string; // Emoji or URL
+  earned: boolean;
+  dateEarned?: string;
+}
+
+// Mock Badge Data
+const mockBadges: Badge[] = [
+  { id: "b1", title: "Faithful Starter", description: "Completed your first module!", message: "✨ Well done! Every step forward is progress on your journey. Keep walking in truth!", icon: "🌱", earned: false },
+  { id: "b2", title: "Weekly Walker", description: "Logged in 7 days in a row!", message: "🌟 Consistency is key! You've shown great dedication this week.", icon: "🚶", earned: false },
+  { id: "b3", title: "Completed in Christ", description: "Finished your first course!", message: "📖 Hallelujah! You've unlocked new wisdom. 'I can do all things through Christ who strengthens me.' - Phil 4:13", icon: "🏆", earned: false },
+  { id: "b4", title: "Prayer Partner", description: "Engaged in discussion forum 5 times.", message: "🙏 Fellowship strengthens faith. Thank you for encouraging others!", icon: "🤝", earned: false },
+  { id: "b5", title: "Resource Explorer", description: "Viewed 10 different resources.", message: "💡 Seeking knowledge is a virtue. Keep exploring the riches of His word!", icon: "🗺️", earned: false },
+  { id: "b6", title: "Assignment Achiever", description: "Submitted 3 assignments.", message: "✅ Diligence bears fruit! Your efforts are seen.", icon: "✍️", earned: false },
+];
+// --- End Badge System ---
+
 
 interface UserContextType {
   currentUser: User | null;
@@ -46,7 +70,9 @@ export const UserProvider = ({ children, navigate }: UserProviderProps) => {
           name: "Alex Student",
           email: "student@example.com",
           role: "student",
-          avatar: "/placeholder.svg"
+          avatar: "/placeholder.svg",
+          // Assign some mock badges (can be dynamic later)
+          badges: mockBadges.map((b, i) => ({ ...b, earned: i < 1 })) // Earn first badge for demo
         };
       } else if (email === "instructor@example.com" && password === "password") {
         user = {
@@ -54,7 +80,8 @@ export const UserProvider = ({ children, navigate }: UserProviderProps) => {
           name: "Taylor Teacher",
           email: "instructor@example.com",
           role: "instructor",
-          avatar: "/placeholder.svg"
+          avatar: "/placeholder.svg",
+          badges: [] // Instructors might not earn student badges
         };
       } else if (email === "admin@example.com" && password === "password") {
         user = {
@@ -62,7 +89,8 @@ export const UserProvider = ({ children, navigate }: UserProviderProps) => {
           name: "Admin User",
           email: "admin@example.com",
           role: "admin",
-          avatar: "/placeholder.svg"
+          avatar: "/placeholder.svg",
+          badges: [] // Admins might not earn student badges
         };
       }
 

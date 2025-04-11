@@ -4,12 +4,13 @@ import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, FileText, Video, CheckCircle } from "lucide-react"; // Import CheckCircle
-import { useUser } from "@/contexts/UserContext";
+import { useUser, Badge } from "@/contexts/UserContext"; // Import Badge from UserContext
 import { useCourses } from "@/contexts/CourseContext";
 import { Module, Resource, Assignment } from "@/contexts/CourseContext"; // Import Assignment type
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import AssignmentItem from "@/components/courses/AssignmentItem"; // Import AssignmentItem
 import { useToast } from "@/hooks/use-toast"; // Import useToast
+import BadgeDisplayModal from "@/components/badges/BadgeDisplayModal"; // Import Badge Modal
 
 const StudentModuleView = () => {
   const { courseId, moduleId } = useParams<{ courseId: string; moduleId: string }>();
@@ -18,6 +19,8 @@ const StudentModuleView = () => {
   const { courses, enrollments, toggleModuleCompletion } = useCourses(); // Use toggleModuleCompletion
   const { toast } = useToast(); // Get toast function
   const [currentResource, setCurrentResource] = useState<Resource | null>(null);
+  const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false); // State for modal
+  const [earnedBadgeToShow, setEarnedBadgeToShow] = useState<Badge | null>(null); // State for modal badge data
 
   const course = courses.find((c) => c.id === courseId);
   const module = course?.modules.find((m) => m.id === moduleId);
@@ -54,9 +57,25 @@ const StudentModuleView = () => {
   const handleToggleComplete = () => { // Renamed handler
     if (currentUser && courseId && moduleId) {
       toggleModuleCompletion(currentUser.id, courseId, moduleId);
-      // Add toast notification here if marking complete
+      // Add more engaging toast notification & trigger badge modal if marking complete
       if (!isModuleCompleted) {
-        toast({ title: "Module Complete!", description: `Great job completing ${module?.title}!` });
+        toast({
+          title: "✨ Module Complete!",
+          description: `Well done, disciple of faith! You've completed ${module?.title}. Keep walking in truth!`,
+          variant: "default",
+        });
+
+        // --- Simulate earning 'Faithful Starter' badge (ID 'b1') ---
+        // In a real app, this logic would be tied to actual badge conditions
+        const faithfulStarterBadge = currentUser.badges.find(b => b.id === 'b1');
+        if (faithfulStarterBadge) {
+           // Simulate earning it if not already earned (for demo)
+           const badgeToShow = { ...faithfulStarterBadge, earned: true, dateEarned: new Date().toISOString() };
+           setEarnedBadgeToShow(badgeToShow);
+           setIsBadgeModalOpen(true);
+           // TODO: Need a way to persist this earned status in UserContext
+        }
+        // --- End Simulation ---
       }
     }
   };
@@ -189,6 +208,12 @@ const StudentModuleView = () => {
           </div>
         </div>
       </div>
+      {/* Render Badge Modal */}
+      <BadgeDisplayModal
+        badge={earnedBadgeToShow}
+        isOpen={isBadgeModalOpen}
+        onClose={() => setIsBadgeModalOpen(false)}
+      />
     </AppLayout>
   );
 };

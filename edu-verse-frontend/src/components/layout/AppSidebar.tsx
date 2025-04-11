@@ -7,13 +7,14 @@ import {
   SidebarContent, 
   SidebarGroup, 
   SidebarGroupContent, 
-  SidebarGroupLabel, 
-  SidebarMenu, 
-  SidebarMenuButton, 
-  SidebarMenuItem 
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarTrigger // Import SidebarTrigger
 } from "@/components/ui/sidebar";
-import { 
-  BarChart3, 
+import {
+  BarChart3,
   BookOpen, 
   FileText, 
   Home, 
@@ -68,11 +69,13 @@ const AppSidebar = () => {
   return (
     <Sidebar>
       <SidebarContent>
-        <div className="p-4">
-          <div className="flex items-center justify-center mb-6">
-            <h1 className="text-xl font-bold text-lms-purple">EduVerse LMS</h1>
-          </div>
+        {/* Header with Title and Collapse Trigger */}
+        <div className="flex items-center justify-between p-4 mb-4 border-b">
+           <h1 className="text-xl font-bold text-lms-purple">EduVerse</h1>
+           {/* Add the trigger button */}
+           <SidebarTrigger className="text-gray-600 hover:text-gray-900" />
         </div>
+
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
