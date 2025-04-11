@@ -20,7 +20,8 @@ import StudentCourseDetail from "./pages/student/StudentCourseDetail";
 // Instructor pages
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
 import InstructorCourses from "./pages/instructor/InstructorCourses"; // Added import
-import InstructorCourseDetail from "./pages/instructor/InstructorCourseDetail"; // Import the new page
+import InstructorCourseDetail from "./pages/instructor/InstructorCourseDetail";
+import InstructorProgress from "./pages/instructor/InstructorProgress";
 import InstructorResources from "./pages/instructor/InstructorResources";
 
 // Admin pages
@@ -62,7 +63,8 @@ const AppContent = () => {
             {/* Instructor routes */}
             <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
             <Route path="/instructor/courses" element={<InstructorCourses />} /> {/* Added route */}
-            <Route path="/instructor/courses/:courseId" element={<InstructorCourseDetail />} /> {/* Add route for course detail */}
+            <Route path="/instructor/courses/:courseId" element={<InstructorCourseDetail />} />
+            <Route path="/instructor/courses/:courseId/progress" element={<InstructorProgress />} />
             <Route path="/instructor/resources" element={<InstructorResources />} />
             
             {/* Admin routes */}

@@ -3,9 +3,10 @@
 export interface Resource {
   id: string;
   title: string;
-  type: 'link' | 'file' | 'video'; // Example types
+  type: 'pdf' | 'video'; // Supported resource types
   url?: string; // For links or video URLs
   filePath?: string; // For uploaded files
+  moduleId: string; // Required to associate resource with module
 }
 
 export interface Assignment {
@@ -16,6 +17,7 @@ export interface Assignment {
   type: 'file' | 'text'; // Type of assignment
   prompt?: string; // For text-based assignments
   filePath?: string; // For file upload assignments (stores path after upload)
+  moduleId: string; // Required to associate assignment with module
 }
 
 // Define structure for Quiz Questions

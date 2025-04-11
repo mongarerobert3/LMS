@@ -1,11 +1,11 @@
-
 import React from "react";
+import { Link } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from "@/contexts/UserContext";
 import { useCourses } from "@/contexts/CourseContext";
-import { BookOpen, FileUp, Users } from "lucide-react";
+import { BookOpen, FileUp, Users, ArrowRight, Clock, CheckCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { BarChart } from "@/components/ui/chart";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,6 @@ const InstructorDashboard = () => {
       instructorCourses.some(course => course.id === enrollment.courseId)
     )
     .reduce((acc, enrollment) => {
-      // Count unique students
       if (!acc.includes(enrollment.userId)) {
         acc.push(enrollment.userId);
       }
@@ -48,17 +47,46 @@ const InstructorDashboard = () => {
       acc + enrollment.progress / array.length, 0
     );
 
-  // Chart data for student progress
+  // Enhanced chart data
   const chartData = instructorCourses.map(course => {
     const courseEnrollments = enrollments.filter(e => e.courseId === course.id);
     const avgCourseProgress = courseEnrollments.length 
       ? courseEnrollments.reduce((acc, e) => acc + e.progress, 0) / courseEnrollments.length
       : 0;
     
+    const moduleCompletion = course.modules.map(module => {
+      const completedCount = enrollments
+        .filter(e => e.courseId === course.id)
+        .filter(e => e.completedModules.includes(module.id))
+        .length;
+      return {
+        name: module.title,
+        value: completedCount
+      };
+    });
+
     return {
       name: course.title,
       students: courseEnrollments.length,
-      avgProgress: Math.round(avgCourseProgress)
+      avgProgress: Math.round(avgCourseProgress),
+      moduleCompletion
+    };
+  });
+
+  // Calculate completion trends (last 7 days)
+  const completionTrends = instructorCourses.map(course => {
+    const dailyProgress = Array(7).fill(0).map((_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return {
+        date: date.toLocaleDateString(),
+        progress: Math.floor(Math.random() * 20) // Mock data - replace with real data
+      };
+    });
+    return {
+      courseId: course.id,
+      courseTitle: course.title,
+      data: dailyProgress
     };
   });
 
@@ -126,27 +154,26 @@ const InstructorDashboard = () => {
           </TabsList>
           
           <TabsContent value="course-stats" className="space-y-4">
-            <Card className="mt-6">
+            <Card>
               <CardHeader>
-                <CardTitle>Course Overview</CardTitle>
+                <CardTitle>Student Progress</CardTitle>
                 <CardDescription>
-                  Student enrollment and progress per course
+                  Enrollment and completion rates per course
                 </CardDescription>
               </CardHeader>
-              <CardContent className="min-h-[300px] md:min-h-[350px]"> {/* Responsive chart height */}
+              <CardContent className="min-h-[300px]">
                 <BarChart 
                   data={chartData}
                   index="name"
                   categories={["students", "avgProgress"]}
-                  colors={["primary", "secondary"]} // Use theme colors (Tailwind resolves these)
+                  colors={["primary", "secondary"]}
                   valueFormatter={(value) => `${value}`}
                   yAxisWidth={48}
                 />
               </CardContent>
             </Card>
             
-            {/* Responsive grid for course cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6"> 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
               {instructorCourses.map((course) => {
                 const courseEnrollments = enrollments.filter(e => e.courseId === course.id);
                 const avgCourseProgress = courseEnrollments.length 
@@ -154,11 +181,12 @@ const InstructorDashboard = () => {
                   : 0;
                 
                 return (
-                  <Card key={course.id}>
+                  <Card key={course.id} className="hover:shadow-md transition-shadow">
                     <CardHeader className="pb-2">
                       <div className="flex justify-between">
                         <CardTitle>{course.title}</CardTitle>
-                        <span className="text-sm font-medium">
+                        <span className="text-sm font-medium flex items-center gap-1">
+                          <Users className="h-4 w-4" />
                           {courseEnrollments.length} {courseEnrollments.length === 1 ? 'student' : 'students'}
                         </span>
                       </div>
@@ -170,34 +198,35 @@ const InstructorDashboard = () => {
                       <div className="space-y-4">
                         <div>
                           <div className="flex justify-between text-sm mb-1">
-                            <span>Average Progress</span>
+                            <span className="flex items-center gap-1">
+                              <CheckCircle className="h-4 w-4" />
+                              Average Progress
+                            </span>
                             <span>{Math.round(avgCourseProgress)}%</span>
                           </div>
                           <Progress value={avgCourseProgress} className="h-2" />
                         </div>
                         
                         <div className="flex justify-between text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Modules:</span>{" "}
-                            {course.modules.length}
+                          <div className="flex items-center gap-1">
+                            <BookOpen className="h-4 w-4" />
+                            <span>Modules: {course.modules.length}</span>
                           </div>
-                          <div>
-                            <span className="text-muted-foreground">Resources:</span>{" "}
-                            {course.modules.reduce((acc, m) => acc + m.resources.length, 0)}
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Assignments:</span>{" "}
-                            {course.modules.reduce((acc, m) => acc + m.assignments.length, 0)}
+                          <div className="flex items-center gap-1">
+                            <FileUp className="h-4 w-4" />
+                            <span>Resources: {course.modules.reduce((acc, m) => acc + m.resources.length, 0)}</span>
                           </div>
                         </div>
                         
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="w-full mt-2"
-                        >
-                          View Course Details
-                        </Button>
+                        <Link to={`/instructor/courses/${course.id}`}>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full mt-2"
+                          >
+                            View Course Details <ArrowRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </Link>
                       </div>
                     </CardContent>
                   </Card>
@@ -217,18 +246,19 @@ const InstructorDashboard = () => {
               <CardContent>
                 <Progress value={avgProgress} className="h-2 mb-6" />
                 
-                {/* Responsive grid for student progress cards */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4"> 
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {instructorCourses.map(course => {
                     const courseEnrollments = enrollments.filter(e => e.courseId === course.id);
                     
                     return (
                       <div key={course.id}>
-                        <h3 className="font-medium mb-2">{course.title}</h3>
+                        <h3 className="font-medium mb-2 flex items-center gap-2">
+                          <BookOpen className="h-4 w-4" />
+                          {course.title}
+                        </h3>
                         
                         {courseEnrollments.length > 0 ? (
                           courseEnrollments.map(enrollment => {
-                            // In a real app, you'd fetch student name from a database
                             const studentName = enrollment.userId === "1" ? "Alex Student" : `Student ${enrollment.userId}`;
                             
                             return (
@@ -239,8 +269,9 @@ const InstructorDashboard = () => {
                                     <div className="text-sm">{enrollment.progress}%</div>
                                   </div>
                                   <Progress value={enrollment.progress} className="h-1.5" />
-                                  <div className="text-xs text-gray-500 mt-1">
-                                    Completed modules: {enrollment.completedModules.length} / {course.modules.length}
+                                  <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    Last active: {new Date().toLocaleDateString()}
                                   </div>
                                 </CardContent>
                               </Card>

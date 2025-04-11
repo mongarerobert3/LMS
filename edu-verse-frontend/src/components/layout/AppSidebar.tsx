@@ -50,8 +50,8 @@ const AppSidebar = () => {
         return [
           { title: "Dashboard", icon: Home, path: "/instructor/dashboard" },
           { title: "My Courses", icon: BookOpen, path: "/instructor/courses" },
-          { title: "Student Progress", icon: BarChart3, path: "/instructor/students" },
-          { title: "Upload Resources", icon: FileText, path: "/instructor/resources" },
+          { title: "Student Progress", icon: BarChart3, path: "/instructor/courses/:courseId/progress" },
+          { title: "Resources", icon: FileText, path: "/instructor/resources" },
         ];
       case "admin":
         return [

@@ -1,6 +1,6 @@
 // src/components/instructor/ResourceList.tsx
 import React from 'react';
-import { Resource } from '@/types/course'; // Import from the centralized types file
+import { Resource } from '@/contexts/CourseContext'; // Use the context's Resource type
 import { FileText, Link as LinkIcon, Video } from 'lucide-react'; // Icons for different types
 
 interface ResourceListProps {

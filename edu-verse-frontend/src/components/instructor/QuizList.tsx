@@ -3,6 +3,7 @@ import React from 'react';
 import { Quiz } from '@/types/course';
 import { HelpCircle } from 'lucide-react'; // Icon for quizzes
 import { Badge } from '@/components/ui/badge'; // To display question count
+import { Button } from '@/components/ui/button'; // Import Button
 
 interface QuizListProps {
   quizzes: Quiz[];

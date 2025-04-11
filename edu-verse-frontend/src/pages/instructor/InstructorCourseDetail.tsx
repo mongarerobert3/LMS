@@ -1,19 +1,18 @@
-// src/pages/instructor/InstructorCourseDetail.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-// Placeholder components - we will create these later
-// import ModuleList from '@/components/instructor/ModuleList';
-import AddModuleModal from '@/components/instructor/AddModuleModal'; // Import the modal
-import AddResourceModal, { NewResourceData } from '@/components/instructor/AddResourceModal'; // Import resource modal and type
-import AddAssignmentModal, { NewAssignmentData } from '@/components/instructor/AddAssignmentModal'; // Import assignment modal and type
-import AddQuizModal, { NewQuizData } from '@/components/instructor/AddQuizModal'; // Import quiz modal and type
-import { Course, Module, NewModuleData, Resource, Assignment, Quiz } from '@/types/course'; // Import types including Quiz
-import ResourceList from '@/components/instructor/ResourceList'; // Import ResourceList
-import AssignmentList from '@/components/instructor/AssignmentList'; // Import AssignmentList
-import QuizList from '@/components/instructor/QuizList'; // Import QuizList
+import AddModuleModal from '@/components/instructor/AddModuleModal';
+import AddResourceModal, { NewResourceData } from '@/components/instructor/AddResourceModal';
+import AddAssignmentModal, { NewAssignmentData } from '@/components/instructor/AddAssignmentModal';
+import AddQuizModal, { NewQuizData } from '@/components/instructor/AddQuizModal';
+import { Course, Module, NewModuleData, Resource, Assignment, Quiz } from '@/types/course';
+import ResourceList from '@/components/instructor/ResourceList';
+import AssignmentList from '@/components/instructor/AssignmentList';
+import QuizList from '@/components/instructor/QuizList';
+import ModuleAccordion from '@/components/courses/ModuleAccordion';
+import StudentProgressTable from '@/components/instructor/StudentProgressTable';
 
 // Mock data structure - replace with actual API call
 const mockCourse: Course = {
@@ -177,34 +176,26 @@ const InstructorCourseDetail: React.FC = () => {
         </Button>
       </div>
 
-      {/* Placeholder for Module List */}
-      <div className="space-y-4">
-         {/* TODO: Replace with <ModuleList modules={course.modules} /> */}
-         {course.modules.length > 0 ? (
-             course.modules.map(module => (
-                 <Card key={module.id}>
-                     <CardHeader>
-                          <CardTitle>{module.title}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                          {/* Display Resources */}
-                          <ResourceList resources={module.resources} />
-                          {/* Display Assignments */}
-                          <AssignmentList assignments={module.assignments} />
-                          {/* Display Quizzes */}
-                          <QuizList quizzes={module.quizzes} />
-                          <div className="mt-4 flex gap-2 border-t pt-4"> {/* Added border-t and pt-4 */}
-                             <Button variant="outline" size="sm" onClick={() => openAddResourceModal(module.id)}>Add Resource</Button>
-                             <Button variant="outline" size="sm" onClick={() => openAddAssignmentModal(module.id)}>Add Assignment</Button>
-                            <Button variant="outline" size="sm" onClick={() => openAddQuizModal(module.id)}>Add Quiz</Button>
-                         </div>
-                     </CardContent>
-                 </Card>
-             ))
-         ) : (
-             <p>No modules added yet.</p>
-         )}
-      </div>
+      {course.modules.length > 0 ? (
+        <ModuleAccordion 
+          modules={course.modules}
+          onAddResource={openAddResourceModal}
+          onAddAssignment={openAddAssignmentModal}
+          onAddQuiz={openAddQuizModal}
+        />
+      ) : (
+        <p>No modules added yet.</p>
+      )}
+
+      {/* Student Progress Table */}
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle>Student Progress</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <StudentProgressTable courseId={courseId} />
+        </CardContent>
+      </Card>
 
       {/* Add Module Modal */}
       <AddModuleModal
@@ -235,8 +226,8 @@ const InstructorCourseDetail: React.FC = () => {
         moduleId={currentModuleId}
       />
 
-       {/* Add Quiz Modal */}
-       <AddQuizModal
+      {/* Add Quiz Modal */}
+      <AddQuizModal
         isOpen={showAddQuizModal}
         onClose={() => {
             setShowAddQuizModal(false);

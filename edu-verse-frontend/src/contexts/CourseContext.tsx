@@ -4,18 +4,36 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 export interface Resource {
   id: string;
   title: string;
-  type: "pdf" | "video";
-  url: string;
+  type: "pdf" | "video" | "file" | "link";
+  url?: string;
+  filePath?: string;
   moduleId: string;
 }
 
 export interface Assignment {
   id: string;
   title: string;
-  description: string;
   dueDate: string;
-  moduleId: string;
   points: number;
+  type: 'file' | 'text';
+  prompt?: string;
+  filePath?: string;
+  moduleId: string;
+  description?: string;
+}
+
+export interface Quiz {
+  id: string;
+  title: string;
+  questions: {
+    id: string;
+    text: string;
+    options: {
+      id: string;
+      text: string;
+      isCorrect: boolean;
+    }[];
+  }[];
 }
 
 export interface Module {
@@ -23,6 +41,7 @@ export interface Module {
   title: string;
   resources: Resource[];
   assignments: Assignment[];
+  quizzes: Quiz[];
 }
 
 export interface Enrollment {
@@ -46,13 +65,23 @@ export interface Course {
   enrollments: Enrollment[];
 }
 
+interface Student {
+  id: string;
+  name: string;
+  email: string;
+  lastActivity?: string;
+  completedModules: string[];
+}
+
 interface CourseContextType {
   courses: Course[];
   enrollments: Enrollment[];
   enrollInCourse: (userId: string, courseId: string) => void;
   getEnrolledCourses: (userId: string) => Course[];
   getCoursesByInstructor: (instructorId: string) => Course[];
+  getCourseStudents: (courseId: string) => Student[];
   addResource: (instructorId: string, courseId: string, moduleId: string, resource: Omit<Resource, "id">) => void;
+  addQuiz: (instructorId: string, courseId: string, moduleId: string, quiz: Omit<Quiz, "id">) => void;
   updateProgress: (userId: string, courseId: string, progress: number, completedModuleId?: string) => void;
 }
 
@@ -95,9 +124,11 @@ const mockCourses: Course[] = [
             description: "Build a simple webpage with at least 5 different HTML elements.",
             dueDate: "2025-05-01",
             moduleId: "m1",
-            points: 10
+            points: 10,
+            type: 'file'
           }
-        ]
+        ],
+        quizzes: []
       },
       {
         id: "m2",
@@ -118,9 +149,11 @@ const mockCourses: Course[] = [
             description: "Add CSS styling to your HTML webpage from the previous assignment.",
             dueDate: "2025-05-15",
             moduleId: "m2",
-            points: 15
+            points: 15,
+            type: 'file'
           }
-        ]
+        ],
+        quizzes: []
       }
     ],
     enrollments: []
@@ -153,9 +186,11 @@ const mockCourses: Course[] = [
             description: "Convert an existing JavaScript codebase to use ES6 features.",
             dueDate: "2025-06-01",
             moduleId: "m3",
-            points: 20
+            points: 20,
+            type: 'file'
           }
-        ]
+        ],
+        quizzes: []
       }
     ],
     enrollments: []
@@ -188,9 +223,11 @@ const mockCourses: Course[] = [
             description: "Build a reusable React component with props and state.",
             dueDate: "2025-06-15",
             moduleId: "m4",
-            points: 15
+            points: 15,
+            type: 'file'
           }
-        ]
+        ],
+        quizzes: []
       }
     ],
     enrollments: []
@@ -298,6 +335,46 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const getCourseStudents = (courseId: string): Student[] => {
+    // In a real app, this would fetch from an API
+    const mockStudents = [
+      { id: '1', name: 'John Doe', email: 'john@example.com', lastActivity: '2025-04-10', completedModules: ['m1'] },
+      { id: '2', name: 'Jane Smith', email: 'jane@example.com', lastActivity: '2025-04-08', completedModules: ['m1', 'm2'] },
+      { id: '3', name: 'Bob Johnson', email: 'bob@example.com', lastActivity: '2025-04-05', completedModules: [] }
+    ];
+    return mockStudents;
+  };
+
+  const addQuiz = (
+    instructorId: string,
+    courseId: string,
+    moduleId: string,
+    quiz: Omit<Quiz, "id">
+  ) => {
+    setCourses(
+      courses.map((course) => {
+        if (course.id === courseId && course.instructorId === instructorId) {
+          return {
+            ...course,
+            modules: course.modules.map((module) => {
+              if (module.id === moduleId) {
+                return {
+                  ...module,
+                  quizzes: [
+                    ...module.quizzes,
+                    { ...quiz, id: `q${Date.now()}` }
+                  ]
+                };
+              }
+              return module;
+            })
+          };
+        }
+        return course;
+      })
+    );
+  };
+
   return (
     <CourseContext.Provider
       value={{
@@ -306,7 +383,9 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
         enrollInCourse,
         getEnrolledCourses,
         getCoursesByInstructor,
+        getCourseStudents,
         addResource,
+        addQuiz,
         updateProgress
       }}
     >
