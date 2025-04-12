@@ -1,4 +1,3 @@
-
 import React from "react";
 import { 
   Accordion, 
@@ -17,6 +16,7 @@ interface ModuleAccordionProps {
   onAddResource?: (moduleId: string) => void;
   onAddAssignment?: (moduleId: string) => void;
   onAddQuiz?: (moduleId: string) => void;
+  setSelectedModule?: (module: Module | null) => void;
 }
 
 const ModuleAccordion = ({ 
@@ -24,16 +24,21 @@ const ModuleAccordion = ({
   completedModules = [],
   onAddResource,
   onAddAssignment,
-  onAddQuiz
+  onAddQuiz,
+  setSelectedModule
 }: ModuleAccordionProps) => {
   return (
     <Accordion type="multiple" className="w-full">
       {modules.map((module) => {
         const isCompleted = completedModules.includes(module.id);
-        
+
+        const handleModuleClick = () => {
+          if (setSelectedModule) setSelectedModule(module);
+        };
+
         return (
           <AccordionItem value={module.id} key={module.id}>
-            <AccordionTrigger className="hover:bg-gray-50 px-4 py-3">
+            <AccordionTrigger className="hover:bg-gray-50 px-4 py-3" onClick={handleModuleClick}>
               <div className="flex items-center justify-between w-full pr-4">
                 <div className="flex items-center">
                   <div className="font-medium">{module.title}</div>
@@ -61,7 +66,7 @@ const ModuleAccordion = ({
                   </div>
                 </div>
               )}
-              
+
               {module.assignments.length > 0 && (
                 <div>
                   <h4 className="font-medium mb-2">Assignments</h4>
@@ -99,6 +104,16 @@ const ModuleAccordion = ({
                   </button>
                 )}
               </div>
+
+              {!isCompleted && (
+                <div className="mt-4">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm text-gray-500">Module Progress</span>
+                    <span className="text-sm font-medium">60%</span>
+                  </div>
+                  <Progress value={60} className="h-2" />
+                </div>
+              )}
             </AccordionContent>
           </AccordionItem>
         );
