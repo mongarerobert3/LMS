@@ -55,7 +55,7 @@ const AppSidebar = ({ openPuzzleModal }: AppSidebarProps) => { // Destructure pr
         return [
           { title: "Dashboard", icon: Home, path: "/instructor/dashboard" },
           { title: "My Courses", icon: BookOpen, path: "/instructor/courses" },
-          { title: "Student Progress", icon: BarChart3, path: "/instructor/students" }, // Updated to match correct path
+
         ];
       case "admin":
         return [

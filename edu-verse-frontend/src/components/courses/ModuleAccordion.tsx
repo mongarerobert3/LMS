@@ -13,27 +13,14 @@ import { Progress } from "@/components/ui/progress";
 interface ModuleAccordionProps {
   modules: Module[];
   completedModules?: string[];
-  onAddResource?: (moduleId: string) => void;
-  onAddAssignment?: (moduleId: string) => void;
-  onAddQuiz?: (moduleId: string) => void;
-  setSelectedModule?: (module: Module | null) => void;
-}
 
-const ModuleAccordion = ({ 
-  modules, 
-  completedModules = [],
-  onAddResource,
-  onAddAssignment,
-  onAddQuiz,
-  setSelectedModule
-}: ModuleAccordionProps) => {
   return (
     <Accordion type="multiple" className="w-full">
       {modules.map((module) => {
         const isCompleted = completedModules.includes(module.id);
 
         const handleModuleClick = () => {
-          if (setSelectedModule) setSelectedModule(module);
+
         };
 
         return (
@@ -77,33 +64,7 @@ const ModuleAccordion = ({
                   </div>
                 </div>
               )}
-              
-              <div className="mt-4 flex gap-2">
-                {onAddResource && (
-                  <button 
-                    onClick={() => onAddResource(module.id)}
-                    className="text-sm px-3 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
-                  >
-                    Add Resource
-                  </button>
-                )}
-                {onAddAssignment && (
-                  <button 
-                    onClick={() => onAddAssignment(module.id)}
-                    className="text-sm px-3 py-1 bg-green-50 text-green-600 rounded hover:bg-green-100"
-                  >
-                    Add Assignment
-                  </button>
-                )}
-                {onAddQuiz && (
-                  <button 
-                    onClick={() => onAddQuiz(module.id)}
-                    className="text-sm px-3 py-1 bg-purple-50 text-purple-600 rounded hover:bg-purple-100"
-                  >
-                    Add Quiz
-                  </button>
-                )}
-              </div>
+
 
               {!isCompleted && (
                 <div className="mt-4">

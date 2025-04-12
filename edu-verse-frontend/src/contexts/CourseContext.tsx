@@ -83,6 +83,7 @@ interface CourseContextType {
   addResource: (instructorId: string, courseId: string, moduleId: string, resource: Omit<Resource, "id">) => void;
   addQuiz: (instructorId: string, courseId: string, moduleId: string, quiz: Omit<Quiz, "id">) => void;
   updateProgress: (userId: string, courseId: string, progress: number, completedModuleId?: string) => void;
+  toggleModuleCompletion: (userId: string, courseId: string, moduleId: string) => string | null; // Return potential badge ID or null
 }
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
@@ -335,45 +336,6 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const getCourseStudents = (courseId: string): Student[] => {
-    // In a real app, this would fetch from an API
-    const mockStudents = [
-      { id: '1', name: 'John Doe', email: 'john@example.com', lastActivity: '2025-04-10', completedModules: ['m1'] },
-      { id: '2', name: 'Jane Smith', email: 'jane@example.com', lastActivity: '2025-04-08', completedModules: ['m1', 'm2'] },
-      { id: '3', name: 'Bob Johnson', email: 'bob@example.com', lastActivity: '2025-04-05', completedModules: [] }
-    ];
-    return mockStudents;
-  };
-
-  const addQuiz = (
-    instructorId: string,
-    courseId: string,
-    moduleId: string,
-    quiz: Omit<Quiz, "id">
-  ) => {
-    setCourses(
-      courses.map((course) => {
-        if (course.id === courseId && course.instructorId === instructorId) {
-          return {
-            ...course,
-            modules: course.modules.map((module) => {
-              if (module.id === moduleId) {
-                return {
-                  ...module,
-                  quizzes: [
-                    ...module.quizzes,
-                    { ...quiz, id: `q${Date.now()}` }
-                  ]
-                };
-              }
-              return module;
-            })
-          };
-        }
-        return course;
-      })
-    );
-  };
 
   return (
     <CourseContext.Provider
@@ -385,8 +347,7 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
         getCoursesByInstructor,
         getCourseStudents,
         addResource,
-        addQuiz,
-        updateProgress
+
       }}
     >
       {children}
