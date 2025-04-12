@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { X, Save, Share2, Check, Loader2, AlertTriangle } from "lucide-react"; // Added Loader2, AlertTriangle
 import { useToast } from "@/hooks/use-toast";
 import { Badge, useUser } from "@/contexts/UserContext";
+import { cn } from "@/lib/utils"; // Import cn utility
 
 // Define expected puzzle data structure
 interface PuzzleClue {
@@ -57,6 +58,8 @@ const BibleCrosswordModal: React.FC<BibleCrosswordModalProps> = ({ isOpen, onClo
   const [puzzleData, setPuzzleData] = useState<PuzzleData | null>(null); // State for fetched data
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeCell, setActiveCell] = useState<{ r: number; c: number } | null>(null);
+  const [currentDirection, setCurrentDirection] = useState<'across' | 'down'>('across');
   const { toast } = useToast();
   const { currentUser } = useUser();
 
@@ -93,11 +96,119 @@ const BibleCrosswordModal: React.FC<BibleCrosswordModalProps> = ({ isOpen, onClo
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, r: number, c: number) => {
     const { value } = e.target;
+    const key = `${r}-${c}`;
+    const newValue = value.toUpperCase().slice(0, 1);
+
     setInputValues(prev => ({
       ...prev,
-      [`${r}-${c}`]: value.toUpperCase().slice(0, 1),
+      [key]: newValue,
     }));
+
+    // Advance focus if a letter was entered
+    if (newValue && puzzleData) {
+      let nextR = r;
+      let nextC = c;
+      if (currentDirection === 'across') {
+        nextC++;
+      } else {
+        nextR++;
+      }
+
+      // Ensure next cell is within bounds and is a white cell
+      if (
+        nextR < puzzleData.gridSize &&
+        nextC < puzzleData.gridSize &&
+        puzzleData.grid[nextR]?.[nextC] === 1
+      ) {
+        const nextInput = document.getElementById(`cell-${nextR}-${nextC}`);
+        nextInput?.focus();
+      }
+    }
   };
+
+  const handleFocus = (r: number, c: number) => {
+    setActiveCell({ r, c });
+    // If the user clicks the *same* cell again, toggle direction
+    if (activeCell?.r === r && activeCell?.c === c) {
+      setCurrentDirection(prev => prev === 'across' ? 'down' : 'across');
+    } else {
+      setActiveCell({ r, c });
+      // TODO: Potentially determine initial direction based on surrounding cells or previous state
+      // For now, default to across unless it's clearly a down-only start?
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, r: number, c: number) => {
+    if (!puzzleData) return;
+
+    let nextR = r;
+    let nextC = c;
+    let moved = false;
+
+    switch (e.key) {
+      case 'ArrowUp':
+        nextR--;
+        moved = true;
+        break;
+      case 'ArrowDown':
+        nextR++;
+        moved = true;
+        break;
+      case 'ArrowLeft':
+        nextC--;
+        moved = true;
+        break;
+      case 'ArrowRight':
+        nextC++;
+        moved = true;
+        break;
+      case 'Backspace':
+      case 'Delete':
+        // If the current cell is empty, move backwards
+        if (!inputValues[`${r}-${c}`]) {
+          if (currentDirection === 'across') {
+            nextC--;
+          } else {
+            nextR--;
+          }
+          moved = true;
+        }
+        // Note: The default input behavior will handle deleting the character if present.
+        // We only handle moving focus if the cell was already empty.
+        break;
+      case 'Enter': // Toggle direction on Enter
+      case ' ': // Toggle direction on Space
+        e.preventDefault(); // Prevent space from typing a space
+        setCurrentDirection(prev => prev === 'across' ? 'down' : 'across');
+        break;
+      default:
+        // Allow typing characters
+        return;
+    }
+
+    if (moved) {
+      e.preventDefault(); // Prevent default arrow key behavior (like scrolling)
+
+      // Find the next valid white cell in the direction moved
+      while (
+        nextR >= 0 && nextR < puzzleData.gridSize &&
+        nextC >= 0 && nextC < puzzleData.gridSize
+      ) {
+        if (puzzleData.grid[nextR]?.[nextC] === 1) {
+          const nextInput = document.getElementById(`cell-${nextR}-${nextC}`);
+          nextInput?.focus();
+          return; // Stop searching once a valid cell is found and focused
+        }
+        // If it's a black cell, keep moving in the same direction (this might need refinement)
+        if (e.key === 'ArrowUp' || (e.key === 'Backspace' && currentDirection === 'down')) nextR--;
+        else if (e.key === 'ArrowDown') nextR++;
+        else if (e.key === 'ArrowLeft' || (e.key === 'Backspace' && currentDirection === 'across')) nextC--;
+        else if (e.key === 'ArrowRight') nextC++;
+        else break; // Stop if it wasn't an arrow or backspace key that initiated the move
+      }
+    }
+  };
+
 
   const getClueNumber = (r: number, c: number): number | null => {
      if (!puzzleData) return null;
@@ -108,8 +219,54 @@ const BibleCrosswordModal: React.FC<BibleCrosswordModalProps> = ({ isOpen, onClo
      return null;
   }
 
+  // Helper to find cells belonging to the current word
+  const getActiveWordCells = (): { r: number; c: number }[] => {
+    if (!activeCell || !puzzleData) return [];
+
+    const { r: startR, c: startC } = activeCell;
+    const cells: { r: number; c: number }[] = [];
+
+    if (currentDirection === 'across') {
+      // Find the start of the word horizontally
+      let c = startC;
+      while (c >= 0 && puzzleData.grid[startR]?.[c] === 1) {
+        c--;
+      }
+      c++; // Move back to the first valid cell
+
+      // Add all cells in the word horizontally
+      while (c < puzzleData.gridSize && puzzleData.grid[startR]?.[c] === 1) {
+        cells.push({ r: startR, c });
+        c++;
+      }
+    } else { // currentDirection === 'down'
+      // Find the start of the word vertically
+      let r = startR;
+      while (r >= 0 && puzzleData.grid[r]?.[startC] === 1) {
+        r--;
+      }
+      r++; // Move back to the first valid cell
+
+      // Add all cells in the word vertically
+      while (r < puzzleData.gridSize && puzzleData.grid[r]?.[startC] === 1) {
+        cells.push({ r, c: startC });
+        r++;
+      }
+    }
+    return cells;
+  };
+
+  const handleClueClick = (clue: PuzzleClue, direction: 'across' | 'down') => {
+    setCurrentDirection(direction);
+    setActiveCell({ r: clue.row, c: clue.col });
+    const targetInput = document.getElementById(`cell-${clue.row}-${clue.col}`);
+    targetInput?.focus();
+  };
+
+
   const renderGrid = () => {
     if (!puzzleData) return null; // Don't render grid if no data
+    const activeWordCells = getActiveWordCells(); // Get cells for highlighting
     return (
       <div
         className="grid border-2 border-gray-600 bg-white shadow-lg mx-auto relative"
@@ -123,25 +280,34 @@ const BibleCrosswordModal: React.FC<BibleCrosswordModalProps> = ({ isOpen, onClo
           const r = Math.floor(index / puzzleData.gridSize);
           const c = index % puzzleData.gridSize;
           const clueNum = getClueNumber(r, c);
+          const isActive = activeCell?.r === r && activeCell?.c === c;
+          const isPartOfActiveWord = activeWordCells.some(cell => cell.r === r && cell.c === c);
 
           return (
             <div
               key={index}
-              className={`relative flex items-center justify-center border border-gray-300 aspect-square ${
-                cell === 1 ? 'bg-white' : 'bg-gray-800'
-              }`}
+              className={cn(
+                "relative flex items-center justify-center border border-gray-300 aspect-square transition-colors duration-150",
+                cell === 1 ? 'bg-white' : 'bg-gray-800',
+                // Apply highlighting: active cell gets ring, active word gets light bg
+                isPartOfActiveWord && !isActive && 'bg-lms-purple/10', // Light purple for word cells
+                isActive && 'bg-lms-purple/25 ring-2 ring-lms-purple ring-inset' // Darker purple + ring for active cell
+              )}
               style={{ minWidth: '30px', minHeight: '30px' }}
             >
               {cell === 1 ? (
                 <>
-                 {clueNum && <span className="absolute top-0 left-0.5 text-[8px] font-bold text-gray-500">{clueNum}</span>}
+                 {clueNum && <span className="absolute top-0 left-0.5 text-[8px] font-bold text-gray-500 select-none">{clueNum}</span>}
                   <input
+                    id={`cell-${r}-${c}`} // Add ID for focusing
                     type="text"
                     maxLength={1}
                     value={inputValues[`${r}-${c}`] || ""}
                     onChange={(e) => handleInputChange(e, r, c)}
-                    className="w-full h-full text-center text-sm font-bold uppercase border-none outline-none focus:ring-1 focus:ring-lms-purple rounded-none"
-                    aria-label={`Cell ${r+1},${c+1}`}
+                    onFocus={() => handleFocus(r, c)}
+                    onKeyDown={(e) => handleKeyDown(e, r, c)}
+                    className="w-full h-full text-center text-sm font-bold uppercase border-none outline-none bg-transparent rounded-none p-0" // Removed focus ring here, handled by parent div
+                    aria-label={`Cell ${r+1},${c+1}${clueNum ? `, Clue ${clueNum}` : ''}`}
                     disabled={isLoading} // Disable input while loading
                   />
                 </>
@@ -248,14 +414,30 @@ const BibleCrosswordModal: React.FC<BibleCrosswordModalProps> = ({ isOpen, onClo
            <div className="md:col-span-1 space-y-4 text-sm">
              <div>
                <h4 className="font-semibold mb-2 border-b pb-1">Across</h4>
-               <ul className="space-y-1 list-inside">
-                 {puzzleData.clues.across.map(c => <li key={`a-${c.num}`}><strong>{c.num}.</strong> {c.clue}</li>)}
+               <ul className="space-y-1 list-inside max-h-60 overflow-y-auto pr-2"> {/* Added scroll */}
+                 {puzzleData.clues.across.map(clue => (
+                   <li
+                     key={`a-${clue.num}`}
+                     className="cursor-pointer hover:text-lms-purple p-1 rounded transition-colors"
+                     onClick={() => handleClueClick(clue, 'across')}
+                   >
+                     <strong>{clue.num}.</strong> {clue.clue}
+                   </li>
+                 ))}
                </ul>
              </div>
              <div>
                <h4 className="font-semibold mb-2 border-b pb-1">Down</h4>
-               <ul className="space-y-1 list-inside">
-                 {puzzleData.clues.down.map(c => <li key={`d-${c.num}`}><strong>{c.num}.</strong> {c.clue}</li>)}
+               <ul className="space-y-1 list-inside max-h-60 overflow-y-auto pr-2"> {/* Added scroll */}
+                 {puzzleData.clues.down.map(clue => (
+                   <li
+                     key={`d-${clue.num}`}
+                     className="cursor-pointer hover:text-lms-purple p-1 rounded transition-colors"
+                     onClick={() => handleClueClick(clue, 'down')}
+                   >
+                     <strong>{clue.num}.</strong> {clue.clue}
+                   </li>
+                 ))}
                </ul>
              </div>
            </div>
