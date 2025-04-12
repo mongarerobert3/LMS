@@ -1,9 +1,9 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Course = require('../models/Course');
+const { Course, Module } = require("../models/Course");
 
 // Create a new course
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const course = new Course(req.body);
     const newCourse = await course.save();
@@ -14,7 +14,7 @@ router.post('/', async (req, res) => {
 });
 
 // Get all courses
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const courses = await Course.find();
     res.json(courses);
@@ -24,11 +24,11 @@ router.get('/', async (req, res) => {
 });
 
 // Get course details by ID including modules
-router.get('/:id', async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ message: "Course not found" });
     }
     res.json(course);
   } catch (err) {
@@ -37,9 +37,11 @@ router.get('/:id', async (req, res) => {
 });
 
 // Get courses by instructor ID
-router.get('/instructor/:instructorId', async (req, res) => {
+router.get("/instructor/:instructorId", async (req, res) => {
   try {
-    const courses = await Course.find({ instructorId: req.params.instructorId });
+    const courses = await Course.find({
+      instructorId: req.params.instructorId,
+    });
     res.json(courses);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -47,11 +49,14 @@ router.get('/instructor/:instructorId', async (req, res) => {
 });
 
 // Update a course
-router.put('/:id', async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
-    const course = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const course = await Course.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ message: "Course not found" });
     }
     res.json(course);
   } catch (err) {
@@ -60,29 +65,29 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete a course
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const course = await Course.findByIdAndDelete(req.params.id);
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ message: "Course not found" });
     }
-    res.json({ message: 'Course deleted' });
+    res.json({ message: "Course deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
 // Add a module to a course
-router.post('/:id/modules', async (req, res) => {
+router.post("/:id/modules", async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ message: "Course not found" });
     }
-    
+
     course.modules.push(req.body);
     await course.save();
-    
+
     res.status(201).json(course);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -90,23 +95,25 @@ router.post('/:id/modules', async (req, res) => {
 });
 
 // Update a specific module in a course
-router.put('/:id/modules/:moduleId', async (req, res) => {
+router.put("/:id/modules/:moduleId", async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ message: "Course not found" });
     }
-    
-    const moduleIndex = course.modules.findIndex(module => module._id.toString() === req.params.moduleId);
+
+    const moduleIndex = course.modules.findIndex(
+      (module) => module._id.toString() === req.params.moduleId
+    );
     if (moduleIndex === -1) {
-      return res.status(404).json({ message: 'Module not found' });
+      return res.status(404).json({ message: "Module not found" });
     }
-    
+
     // Update module fields
-    Object.keys(req.body).forEach(key => {
+    Object.keys(req.body).forEach((key) => {
       course.modules[moduleIndex][key] = req.body[key];
     });
-    
+
     await course.save();
     res.json(course);
   } catch (err) {
@@ -115,17 +122,19 @@ router.put('/:id/modules/:moduleId', async (req, res) => {
 });
 
 // Delete a specific module from a course
-router.delete('/:id/modules/:moduleId', async (req, res) => {
+router.delete("/:id/modules/:moduleId", async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ message: "Course not found" });
     }
-    
-    course.modules = course.modules.filter(module => module._id.toString() !== req.params.moduleId);
+
+    course.modules = course.modules.filter(
+      (module) => module._id.toString() !== req.params.moduleId
+    );
     await course.save();
-    
-    res.json({ message: 'Module deleted', course });
+
+    res.json({ message: "Module deleted", course });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
