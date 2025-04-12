@@ -73,7 +73,7 @@ const BibleCrosswordModal: React.FC<BibleCrosswordModalProps> = ({ isOpen, onClo
         setInputValues({}); // Clear previous inputs
         try {
           // Fetch from backend (running on port 3001)
-          const response = await fetch('http://localhost:3001/api/puzzle');
+          const response = await fetch('https://lms-6lzi.onrender.com/api/puzzle');
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }

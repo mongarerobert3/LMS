@@ -59,154 +59,108 @@ interface CourseContextType {
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
 
-// Mock data for courses
+// Mock data for church-themed courses
 const mockCourses: Course[] = [
   {
-    id: "1",
-    title: "Introduction to Web Development",
-    description: "Learn the basics of HTML, CSS, and JavaScript to build responsive websites.",
-    instructor: "Taylor Teacher",
-    instructorId: "2",
-    thumbnail: "/placeholder.svg",
+    id: "c1",
+    title: "Foundations of Faith: Old Testament Survey",
+    description: "Explore the key narratives, figures, and theological themes of the Old Testament.",
+    instructor: "Pastor John",
+    instructorId: "i1",
+    thumbnail: "/placeholder.svg", // Replace with actual image path if available
     duration: "8 weeks",
     modules: [
       {
-        id: "m1",
-        title: "HTML Fundamentals",
+        id: "c1m1",
+        title: "Genesis: Beginnings",
         resources: [
-          {
-            id: "r1",
-            title: "HTML Basics PDF",
-            type: "pdf",
-            url: "#",
-            moduleId: "m1"
-          },
-          {
-            id: "r2",
-            title: "Introduction to Tags",
-            type: "video",
-            url: "#",
-            moduleId: "m1"
-          }
+          { id: "c1r1", title: "Creation Story Explained (Video)", type: "video", url: "#", moduleId: "c1m1" },
+          { id: "c1r2", title: "Patriarchs Overview (PDF)", type: "pdf", url: "#", moduleId: "c1m1" },
         ],
         assignments: [
-          {
-            id: "a1",
-            title: "Create a Simple Webpage",
-            description: "Build a simple webpage with at least 5 different HTML elements.",
-            dueDate: "2025-05-01",
-            moduleId: "m1",
-            points: 10
-          }
-        ]
+          { id: "c1a1", title: "Reflection on Creation", description: "Write a short reflection on the significance of the Genesis creation account.", dueDate: "2025-05-10", moduleId: "c1m1", points: 10 },
+        ],
       },
       {
-        id: "m2",
-        title: "CSS Styling",
+        id: "c1m2",
+        title: "Exodus: Deliverance",
         resources: [
-          {
-            id: "r3",
-            title: "CSS Selectors Guide",
-            type: "pdf",
-            url: "#",
-            moduleId: "m2"
-          }
+          { id: "c1r3", title: "The Ten Commandments (PDF)", type: "pdf", url: "#", moduleId: "c1m2" },
         ],
         assignments: [
-          {
-            id: "a2",
-            title: "Style Your Webpage",
-            description: "Add CSS styling to your HTML webpage from the previous assignment.",
-            dueDate: "2025-05-15",
-            moduleId: "m2",
-            points: 15
-          }
-        ]
-      }
+          { id: "c1a2", title: "Moses' Leadership Quiz", description: "Answer multiple-choice questions about Moses' role.", dueDate: "2025-05-24", moduleId: "c1m2", points: 15 },
+        ],
+      },
     ],
-    enrollments: []
+    enrollments: [],
   },
   {
-    id: "2",
-    title: "Advanced JavaScript",
-    description: "Dive deep into JavaScript with advanced concepts and frameworks.",
-    instructor: "Taylor Teacher",
-    instructorId: "2",
-    thumbnail: "/placeholder.svg",
+    id: "c2",
+    title: "Life of Christ: New Testament Gospels",
+    description: "Study the life, teachings, death, and resurrection of Jesus Christ as presented in the Gospels.",
+    instructor: "Dr. Mary",
+    instructorId: "i2",
+    thumbnail: "/placeholder.svg", // Replace with actual image path if available
     duration: "10 weeks",
     modules: [
       {
-        id: "m3",
-        title: "ES6 Features",
+        id: "c2m1",
+        title: "Birth and Early Life",
         resources: [
-          {
-            id: "r4",
-            title: "Modern JavaScript Guide",
-            type: "pdf",
-            url: "#",
-            moduleId: "m3"
-          }
+          { id: "c2r1", title: "Nativity Narratives Compared (PDF)", type: "pdf", url: "#", moduleId: "c2m1" },
         ],
         assignments: [
-          {
-            id: "a3",
-            title: "ES6 Conversion Project",
-            description: "Convert an existing JavaScript codebase to use ES6 features.",
-            dueDate: "2025-06-01",
-            moduleId: "m3",
-            points: 20
-          }
-        ]
-      }
+          { id: "c2a1", title: "Gospel Harmony Exercise", description: "Compare the accounts of Jesus' birth in Matthew and Luke.", dueDate: "2025-06-05", moduleId: "c2m1", points: 20 },
+        ],
+      },
+      {
+        id: "c2m2",
+        title: "Ministry and Miracles",
+        resources: [
+          { id: "c2r2", title: "Parables of Jesus (Video)", type: "video", url: "#", moduleId: "c2m2" },
+          { id: "c2r3", title: "Understanding Miracles (PDF)", type: "pdf", url: "#", moduleId: "c2m2" },
+        ],
+        assignments: [
+          { id: "c2a2", title: "Parable Analysis", description: "Choose one parable and explain its meaning and application.", dueDate: "2025-06-19", moduleId: "c2m2", points: 15 },
+        ],
+      },
     ],
-    enrollments: []
+    enrollments: [],
   },
   {
-    id: "3",
-    title: "React Fundamentals",
-    description: "Learn the fundamentals of building applications with React.",
-    instructor: "Taylor Teacher",
-    instructorId: "2",
-    thumbnail: "/placeholder.svg",
+    id: "c3",
+    title: "Spiritual Disciplines for Everyday Life",
+    description: "Learn practical ways to cultivate your relationship with God through prayer, study, and service.",
+    instructor: "Pastor John",
+    instructorId: "i1",
+    thumbnail: "/placeholder.svg", // Replace with actual image path if available
     duration: "6 weeks",
     modules: [
       {
-        id: "m4",
-        title: "React Basics",
+        id: "c3m1",
+        title: "The Discipline of Prayer",
         resources: [
-          {
-            id: "r5",
-            title: "Introduction to React",
-            type: "video",
-            url: "#",
-            moduleId: "m4"
-          }
+          { id: "c3r1", title: "Models of Prayer (Video)", type: "video", url: "#", moduleId: "c3m1" },
+          { id: "c3r2", title: "Prayer Journal Guide (PDF)", type: "pdf", url: "#", moduleId: "c3m1" },
         ],
         assignments: [
-          {
-            id: "a4",
-            title: "Create a React Component",
-            description: "Build a reusable React component with props and state.",
-            dueDate: "2025-06-15",
-            moduleId: "m4",
-            points: 15
-          }
-        ]
-      }
+          { id: "c3a1", title: "Start a Prayer Journal", description: "Keep a prayer journal for one week and reflect on the experience.", dueDate: "2025-07-01", moduleId: "c3m1", points: 10 },
+        ],
+      },
     ],
-    enrollments: []
-  }
+    enrollments: [],
+  },
 ];
 
-// Mock data for initial enrollments
+// Mock data for initial enrollments (adjust if needed for new course IDs)
 const mockEnrollments: Enrollment[] = [
   {
     id: "e1",
-    userId: "1",
-    courseId: "1",
-    enrollmentDate: "2025-04-01",
-    progress: 25,
-    completedModules: ["m1"]
+    userId: "1", // Assuming user '1' exists
+    courseId: "c1", // Enroll user '1' in the first church-themed course
+    enrollmentDate: "2025-04-10",
+    progress: 0, // Start with 0 progress
+    completedModules: []
   }
 ];
 
