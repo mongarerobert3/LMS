@@ -1,5 +1,6 @@
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import * as coursesApi from "../api/courses";
 
 export interface Resource {
   id: string;
@@ -49,189 +50,63 @@ export interface Course {
 interface CourseContextType {
   courses: Course[];
   enrollments: Enrollment[];
-  enrollInCourse: (userId: string, courseId: string) => void;
+  loading: boolean;
+  error: string | null;
+  enrollInCourse: (userId: string, courseId: string) => Promise<void>;
   getEnrolledCourses: (userId: string) => Course[];
-  getCoursesByInstructor: (instructorId: string) => Course[];
-  addResource: (instructorId: string, courseId: string, moduleId: string, resource: Omit<Resource, "id">) => void;
-  updateProgress: (userId: string, courseId: string, progress: number, completedModuleId?: string) => void;
-  toggleModuleCompletion: (userId: string, courseId: string, moduleId: string) => string | null; // Return potential badge ID or null
+  getCoursesByInstructor: (instructorId: string) => Promise<Course[]>;
+  addResource: (instructorId: string, courseId: string, moduleId: string, resource: Omit<Resource, "id">) => Promise<void>;
+  updateProgress: (userId: string, courseId: string, progress: number, completedModuleId?: string) => Promise<void>;
+  toggleModuleCompletion: (userId: string, courseId: string, moduleId: string) => Promise<string | null>;
 }
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
 
-// Mock data for courses
-const mockCourses: Course[] = [
-  {
-    id: "1",
-    title: "Introduction to Web Development",
-    description: "Learn the basics of HTML, CSS, and JavaScript to build responsive websites.",
-    instructor: "Taylor Teacher",
-    instructorId: "2",
-    thumbnail: "/placeholder.svg",
-    duration: "8 weeks",
-    modules: [
-      {
-        id: "m1",
-        title: "HTML Fundamentals",
-        resources: [
-          {
-            id: "r1",
-            title: "HTML Basics PDF",
-            type: "pdf",
-            url: "#",
-            moduleId: "m1"
-          },
-          {
-            id: "r2",
-            title: "Introduction to Tags",
-            type: "video",
-            url: "#",
-            moduleId: "m1"
-          }
-        ],
-        assignments: [
-          {
-            id: "a1",
-            title: "Create a Simple Webpage",
-            description: "Build a simple webpage with at least 5 different HTML elements.",
-            dueDate: "2025-05-01",
-            moduleId: "m1",
-            points: 10
-          }
-        ]
-      },
-      {
-        id: "m2",
-        title: "CSS Styling",
-        resources: [
-          {
-            id: "r3",
-            title: "CSS Selectors Guide",
-            type: "pdf",
-            url: "#",
-            moduleId: "m2"
-          }
-        ],
-        assignments: [
-          {
-            id: "a2",
-            title: "Style Your Webpage",
-            description: "Add CSS styling to your HTML webpage from the previous assignment.",
-            dueDate: "2025-05-15",
-            moduleId: "m2",
-            points: 15
-          }
-        ]
-      }
-    ],
-    enrollments: []
-  },
-  {
-    id: "2",
-    title: "Advanced JavaScript",
-    description: "Dive deep into JavaScript with advanced concepts and frameworks.",
-    instructor: "Taylor Teacher",
-    instructorId: "2",
-    thumbnail: "/placeholder.svg",
-    duration: "10 weeks",
-    modules: [
-      {
-        id: "m3",
-        title: "ES6 Features",
-        resources: [
-          {
-            id: "r4",
-            title: "Modern JavaScript Guide",
-            type: "pdf",
-            url: "#",
-            moduleId: "m3"
-          }
-        ],
-        assignments: [
-          {
-            id: "a3",
-            title: "ES6 Conversion Project",
-            description: "Convert an existing JavaScript codebase to use ES6 features.",
-            dueDate: "2025-06-01",
-            moduleId: "m3",
-            points: 20
-          }
-        ]
-      }
-    ],
-    enrollments: []
-  },
-  {
-    id: "3",
-    title: "React Fundamentals",
-    description: "Learn the fundamentals of building applications with React.",
-    instructor: "Taylor Teacher",
-    instructorId: "2",
-    thumbnail: "/placeholder.svg",
-    duration: "6 weeks",
-    modules: [
-      {
-        id: "m4",
-        title: "React Basics",
-        resources: [
-          {
-            id: "r5",
-            title: "Introduction to React",
-            type: "video",
-            url: "#",
-            moduleId: "m4"
-          }
-        ],
-        assignments: [
-          {
-            id: "a4",
-            title: "Create a React Component",
-            description: "Build a reusable React component with props and state.",
-            dueDate: "2025-06-15",
-            moduleId: "m4",
-            points: 15
-          }
-        ]
-      }
-    ],
-    enrollments: []
-  }
-];
-
-// Mock data for initial enrollments
-const mockEnrollments: Enrollment[] = [
-  {
-    id: "e1",
-    userId: "1",
-    courseId: "1",
-    enrollmentDate: "2025-04-01",
-    progress: 25,
-    completedModules: ["m1"]
-  }
-];
 
 export const CourseProvider = ({ children }: { children: ReactNode }) => {
-  const [courses, setCourses] = useState<Course[]>(mockCourses);
-  const [enrollments, setEnrollments] = useState<Enrollment[]>(mockEnrollments);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const enrollInCourse = (userId: string, courseId: string) => {
-    // Check if already enrolled
-    const existingEnrollment = enrollments.find(
-      (e) => e.userId === userId && e.courseId === courseId
-    );
-
-    if (existingEnrollment) return;
-
-    const newEnrollment: Enrollment = {
-      id: `e${enrollments.length + 1}`,
-      userId,
-      courseId,
-      enrollmentDate: new Date().toISOString().split('T')[0],
-      progress: 0,
-      completedModules: []
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const data = await coursesApi.getCourses();
+        setCourses(data);
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to load courses');
+        setLoading(false);
+      }
     };
 
-    setEnrollments([...enrollments, newEnrollment]);
+    fetchCourses();
+  }, []);
+
+  const enrollInCourse = async (userId: string, courseId: string) => {
+    try {
+      // Check if already enrolled
+      const existingEnrollment = enrollments.find(
+        (e) => e.userId === userId && e.courseId === courseId
+      );
+
+      if (existingEnrollment) return;
+
+      // In a real app, you would call an API endpoint to enroll
+      const newEnrollment: Enrollment = {
+        id: `e${enrollments.length + 1}`,
+        userId,
+        courseId,
+        enrollmentDate: new Date().toISOString().split('T')[0],
+        progress: 0,
+        completedModules: []
+      };
+
+      setEnrollments([...enrollments, newEnrollment]);
+    } catch (err) {
+      setError('Failed to enroll in course');
+    }
   };
 
   const getEnrolledCourses = (userId: string): Course[] => {
@@ -241,109 +116,108 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const getCoursesByInstructor = (instructorId: string): Course[] => {
-    return courses.filter((course) => course.instructorId === instructorId);
+  const getCoursesByInstructor = async (instructorId: string): Promise<Course[]> => {
+    try {
+      const data = await coursesApi.getCoursesByInstructor(instructorId);
+      return data;
+    } catch (err) {
+      setError('Failed to fetch instructor courses');
+      return [];
+    }
   };
 
-  const addResource = (
+  const addResource = async (
     instructorId: string,
     courseId: string,
     moduleId: string,
     resource: Omit<Resource, "id">
   ) => {
-    setCourses(
-      courses.map((course) => {
-        if (course.id === courseId && course.instructorId === instructorId) {
-          return {
-            ...course,
-            modules: course.modules.map((module) => {
-              if (module.id === moduleId) {
-                return {
-                  ...module,
-                  resources: [
-                    ...module.resources,
-                    { ...resource, id: `r${Date.now()}` }
-                  ]
-                };
-              }
-              return module;
-            })
-          };
-        }
-        return course;
-      })
-    );
+    try {
+      const updatedCourse = await coursesApi.addModule(courseId, {
+        ...resource,
+        id: `r${Date.now()}`
+      });
+      
+      setCourses(courses.map(c => 
+        c.id === courseId ? updatedCourse : c
+      ));
+    } catch (err) {
+      setError('Failed to add resource');
+    }
   };
 
-  const updateProgress = (
+  const updateProgress = async (
     userId: string,
     courseId: string,
     progress: number,
     completedModuleId?: string
   ) => {
-    setEnrollments(
-      enrollments.map((enrollment) => {
-        if (enrollment.userId === userId && enrollment.courseId === courseId) {
-          const completedModules = completedModuleId
-            ? [...enrollment.completedModules, completedModuleId]
-            : enrollment.completedModules;
+    try {
+      // In a real app, you would call an API endpoint to update progress
+      setEnrollments(
+        enrollments.map((enrollment) => {
+          if (enrollment.userId === userId && enrollment.courseId === courseId) {
+            const completedModules = completedModuleId
+              ? [...enrollment.completedModules, completedModuleId]
+              : enrollment.completedModules;
 
-          return {
-            ...enrollment,
-            progress,
-            completedModules
-          };
-        }
-        return enrollment;
-      })
-    );
+            return {
+              ...enrollment,
+              progress,
+              completedModules
+            };
+          }
+          return enrollment;
+        })
+      );
+    } catch (err) {
+      setError('Failed to update progress');
+    }
   };
 
-  const toggleModuleCompletion = (userId: string, courseId: string, moduleId: string): string | null => {
-    let newlyEarnedCourseBadgeId: string | null = null; // Store ID of badge earned by completing the course
+  const toggleModuleCompletion = async (userId: string, courseId: string, moduleId: string): Promise<string | null> => {
+    try {
+      let newlyEarnedCourseBadgeId: string | null = null;
 
-    setEnrollments(
-      enrollments.map((enrollment) => {
-        if (enrollment.userId === userId && enrollment.courseId === courseId) {
-          const course = courses.find(c => c.id === courseId);
-          if (!course) return enrollment;
+      // In a real app, you would call an API endpoint to update module completion
+      setEnrollments(
+        enrollments.map((enrollment) => {
+          if (enrollment.userId === userId && enrollment.courseId === courseId) {
+            const course = courses.find(c => c.id === courseId);
+            if (!course) return enrollment;
 
-          let updatedCompletedModules: string[];
-          const isCurrentlyCompleted = enrollment.completedModules.includes(moduleId);
+            let updatedCompletedModules: string[];
+            const isCurrentlyCompleted = enrollment.completedModules.includes(moduleId);
 
-          if (isCurrentlyCompleted) {
-            // Mark as incomplete
-            updatedCompletedModules = enrollment.completedModules.filter(id => id !== moduleId);
-          } else {
-            // Mark as complete
-            updatedCompletedModules = [...enrollment.completedModules, moduleId];
-            // Check if this completion finishes the course
-            if (updatedCompletedModules.length === course.modules.length && course.modules.length > 0) {
-               // Award "Completed in Christ" badge (ID 'b3')
-               newlyEarnedCourseBadgeId = 'b3';
-               console.log(`Course "${course.title}" completed by user ${userId}! Award badge 'b3'.`);
-               // In a real app, you'd call a function here to update the user's badge status persistently.
+            if (isCurrentlyCompleted) {
+              updatedCompletedModules = enrollment.completedModules.filter(id => id !== moduleId);
+            } else {
+              updatedCompletedModules = [...enrollment.completedModules, moduleId];
+              if (updatedCompletedModules.length === course.modules.length && course.modules.length > 0) {
+                newlyEarnedCourseBadgeId = 'b3';
+              }
             }
+
+            const totalModules = course.modules.length;
+            const newProgress = totalModules > 0
+              ? Math.round((updatedCompletedModules.length / totalModules) * 100)
+              : 0;
+
+            return {
+              ...enrollment,
+              completedModules: updatedCompletedModules,
+              progress: newProgress,
+            };
           }
+          return enrollment;
+        })
+      );
 
-          const totalModules = course.modules.length;
-          const newProgress = totalModules > 0
-            ? Math.round((updatedCompletedModules.length / totalModules) * 100)
-            : 0;
-
-          return {
-            ...enrollment,
-            completedModules: updatedCompletedModules,
-            progress: newProgress,
-          };
-        }
-        return enrollment;
-      })
-    );
-
-     // This state update happens asynchronously, so we return the badge ID directly
-     // if it was determined within the synchronous part of the map.
-     return newlyEarnedCourseBadgeId;
+      return newlyEarnedCourseBadgeId;
+    } catch (err) {
+      setError('Failed to toggle module completion');
+      return null;
+    }
   };
 
 
@@ -352,12 +226,14 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
       value={{
         courses,
         enrollments,
+        loading,
+        error,
         enrollInCourse,
         getEnrolledCourses,
         getCoursesByInstructor,
         addResource,
         updateProgress,
-        toggleModuleCompletion, // Updated function name
+        toggleModuleCompletion,
       }}
     >
       {children}

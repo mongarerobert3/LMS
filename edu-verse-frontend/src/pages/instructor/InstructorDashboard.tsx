@@ -1,22 +1,44 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from "@/contexts/UserContext";
 import { useCourses } from "@/contexts/CourseContext";
+import { Course } from "@/contexts/CourseContext";
 import { BookOpen, FileUp, Users } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { BarChart } from "@/components/ui/chart";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const InstructorDashboard = () => {
   const { currentUser } = useUser();
-  const { courses, enrollments, getCoursesByInstructor } = useCourses();
+  const { enrollments, getCoursesByInstructor } = useCourses();
+  const [instructorCourses, setInstructorCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      if (!currentUser) return;
+      
+      try {
+        setLoading(true);
+        const courses = await getCoursesByInstructor(currentUser.id);
+        setInstructorCourses(courses);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load courses');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, [currentUser, getCoursesByInstructor]);
 
   if (!currentUser) return null;
-
-  const instructorCourses = getCoursesByInstructor(currentUser.id);
   
   // Calculate total students across all instructor's courses
   const totalStudents = enrollments
@@ -61,6 +83,42 @@ const InstructorDashboard = () => {
       avgProgress: Math.round(avgCourseProgress)
     };
   });
+
+  if (loading) {
+    return (
+      <AppLayout requiredRole="instructor">
+        <div className="space-y-8">
+          <Skeleton className="h-8 w-[200px]" />
+          <Skeleton className="h-4 w-[300px]" />
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <Card key={i}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <Skeleton className="h-4 w-[100px]" />
+                  <Skeleton className="h-4 w-4" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-6 w-[50px] mb-1" />
+                  <Skeleton className="h-3 w-[150px]" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppLayout requiredRole="instructor">
+        <div className="space-y-8">
+          <div className="text-red-500">{error}</div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout requiredRole="instructor">

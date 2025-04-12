@@ -77,7 +77,7 @@ const AppSidebar = ({ openPuzzleModal }: AppSidebarProps) => { // Destructure pr
       <SidebarContent>
         {/* Header with Title and Collapse Trigger */}
         <div className="flex items-center justify-between p-4 mb-4 border-b">
-           <h1 className="text-xl font-bold text-lms-purple">EduVerse</h1>
+           <h1 className="text-xl font-bold text-lms-purple">OneHope</h1>
            {/* Add the trigger button */}
            <SidebarTrigger className="text-gray-600 hover:text-gray-900" />
         </div>

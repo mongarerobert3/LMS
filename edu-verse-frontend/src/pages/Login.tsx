@@ -47,7 +47,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-lms-background">
       <div className="w-full max-w-md p-6 rounded-lg shadow-md bg-white">
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-semibold text-lms-blue">EduVerse LMS</h1>
+          <h1 className="text-3xl font-semibold text-lms-blue">OneHope LMS</h1>
           <p className="text-gray-500">Your Gateway to Knowledge</p>
         </div>
 
