@@ -4,6 +4,7 @@ import { useUser } from "@/contexts/UserContext";
 import { Bell, Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Link } from "react-router-dom"; // Import Link
 
 const TopNavbar = () => {
   const { currentUser } = useUser();
@@ -30,7 +31,7 @@ const TopNavbar = () => {
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
         </button>
         
-        <div className="flex items-center">
+        <Link to="/student/settings" className="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded-md">
           <Avatar className="h-8 w-8 mr-2">
             <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
             <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
@@ -40,7 +41,7 @@ const TopNavbar = () => {
             <p className="text-sm font-medium">{currentUser.name}</p>
             <p className="text-xs text-gray-500 capitalize">{currentUser.role}</p>
           </div>
-        </div>
+        </Link>
       </div>
     </header>
   );

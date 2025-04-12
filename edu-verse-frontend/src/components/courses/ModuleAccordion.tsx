@@ -14,17 +14,22 @@ import { Progress } from "@/components/ui/progress";
 interface ModuleAccordionProps {
   modules: Module[];
   completedModules?: string[];
+  setSelectedModule: (module: Module | null) => void;
 }
 
-const ModuleAccordion = ({ modules, completedModules = [] }: ModuleAccordionProps) => {
+const ModuleAccordion = ({ modules, completedModules = [], setSelectedModule }: ModuleAccordionProps) => {
   return (
     <Accordion type="multiple" className="w-full">
       {modules.map((module) => {
         const isCompleted = completedModules.includes(module.id);
-        
+
+        const handleModuleClick = () => {
+          setSelectedModule(module);
+        };
+
         return (
           <AccordionItem value={module.id} key={module.id}>
-            <AccordionTrigger className="hover:bg-gray-50 px-4 py-3">
+            <AccordionTrigger className="hover:bg-gray-50 px-4 py-3" onClick={handleModuleClick}>
               <div className="flex items-center justify-between w-full pr-4">
                 <div className="flex items-center">
                   <div className="font-medium">{module.title}</div>
@@ -51,7 +56,7 @@ const ModuleAccordion = ({ modules, completedModules = [] }: ModuleAccordionProp
                   </div>
                 </div>
               )}
-              
+
               {module.assignments.length > 0 && (
                 <div>
                   <h4 className="font-medium mb-2">Assignments</h4>
@@ -62,7 +67,7 @@ const ModuleAccordion = ({ modules, completedModules = [] }: ModuleAccordionProp
                   </div>
                 </div>
               )}
-              
+
               {!isCompleted && (
                 <div className="mt-4">
                   <div className="flex justify-between items-center mb-1">

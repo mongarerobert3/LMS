@@ -54,6 +54,7 @@ interface CourseContextType {
   getCoursesByInstructor: (instructorId: string) => Course[];
   addResource: (instructorId: string, courseId: string, moduleId: string, resource: Omit<Resource, "id">) => void;
   updateProgress: (userId: string, courseId: string, progress: number, completedModuleId?: string) => void;
+  toggleModuleCompletion: (userId: string, courseId: string, moduleId: string) => string | null; // Return potential badge ID or null
 }
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
@@ -298,6 +299,54 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const toggleModuleCompletion = (userId: string, courseId: string, moduleId: string): string | null => {
+    let newlyEarnedCourseBadgeId: string | null = null; // Store ID of badge earned by completing the course
+
+    setEnrollments(
+      enrollments.map((enrollment) => {
+        if (enrollment.userId === userId && enrollment.courseId === courseId) {
+          const course = courses.find(c => c.id === courseId);
+          if (!course) return enrollment;
+
+          let updatedCompletedModules: string[];
+          const isCurrentlyCompleted = enrollment.completedModules.includes(moduleId);
+
+          if (isCurrentlyCompleted) {
+            // Mark as incomplete
+            updatedCompletedModules = enrollment.completedModules.filter(id => id !== moduleId);
+          } else {
+            // Mark as complete
+            updatedCompletedModules = [...enrollment.completedModules, moduleId];
+            // Check if this completion finishes the course
+            if (updatedCompletedModules.length === course.modules.length && course.modules.length > 0) {
+               // Award "Completed in Christ" badge (ID 'b3')
+               newlyEarnedCourseBadgeId = 'b3';
+               console.log(`Course "${course.title}" completed by user ${userId}! Award badge 'b3'.`);
+               // In a real app, you'd call a function here to update the user's badge status persistently.
+            }
+          }
+
+          const totalModules = course.modules.length;
+          const newProgress = totalModules > 0
+            ? Math.round((updatedCompletedModules.length / totalModules) * 100)
+            : 0;
+
+          return {
+            ...enrollment,
+            completedModules: updatedCompletedModules,
+            progress: newProgress,
+          };
+        }
+        return enrollment;
+      })
+    );
+
+     // This state update happens asynchronously, so we return the badge ID directly
+     // if it was determined within the synchronous part of the map.
+     return newlyEarnedCourseBadgeId;
+  };
+
+
   return (
     <CourseContext.Provider
       value={{
@@ -307,7 +356,8 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
         getEnrolledCourses,
         getCoursesByInstructor,
         addResource,
-        updateProgress
+        updateProgress,
+        toggleModuleCompletion, // Updated function name
       }}
     >
       {children}
