@@ -56,9 +56,20 @@ const AppContent = () => {
             {/* Auth routes */}
             <Route path="/login" element={<Login />} />
 
+            {/* Student routes */}
+            <Route path="/student/dashboard" element={<StudentDashboard />} />
+            <Route path="/student/courses" element={<StudentCourses />} />
+            <Route path="/student/courses/:id" element={<StudentCourseDetail />} />
+            <Route path="/student/modules/:id" element={<StudentModuleView />} />
+            <Route path="/student/settings" element={<StudentSettings />} />
 
+            {/* Instructor routes */}
+            <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
+            <Route path="/instructor/courses" element={<InstructorCourses />} />
+            <Route path="/instructor/courses/:id" element={<InstructorCourseDetail />} />
+            <Route path="/instructor/progress" element={<InstructorProgress />} />
             <Route path="/instructor/resources" element={<InstructorResources />} />
-            
+
             {/* Admin routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             

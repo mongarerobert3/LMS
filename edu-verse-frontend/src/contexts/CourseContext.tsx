@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 export interface Resource {
@@ -83,7 +82,7 @@ interface CourseContextType {
   addResource: (instructorId: string, courseId: string, moduleId: string, resource: Omit<Resource, "id">) => void;
   addQuiz: (instructorId: string, courseId: string, moduleId: string, quiz: Omit<Quiz, "id">) => void;
   updateProgress: (userId: string, courseId: string, progress: number, completedModuleId?: string) => void;
-  toggleModuleCompletion: (userId: string, courseId: string, moduleId: string) => string | null; // Return potential badge ID or null
+  toggleModuleCompletion: (userId: string, courseId: string, moduleId: string) => string | null;
 }
 
 const CourseContext = createContext<CourseContextType | undefined>(undefined);
@@ -252,7 +251,6 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
   const [enrollments, setEnrollments] = useState<Enrollment[]>(mockEnrollments);
 
   const enrollInCourse = (userId: string, courseId: string) => {
-    // Check if already enrolled
     const existingEnrollment = enrollments.find(
       (e) => e.userId === userId && e.courseId === courseId
     );
@@ -336,6 +334,84 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const getCourseStudents = (courseId: string): Student[] => {
+    const mockStudents = [
+      { id: '1', name: 'John Doe', email: 'john@example.com', lastActivity: '2025-04-10', completedModules: ['m1'] },
+      { id: '2', name: 'Jane Smith', email: 'jane@example.com', lastActivity: '2025-04-08', completedModules: ['m1', 'm2'] },
+      { id: '3', name: 'Bob Johnson', email: 'bob@example.com', lastActivity: '2025-04-05', completedModules: [] }
+    ];
+    return mockStudents;
+  };
+
+  const addQuiz = (
+    instructorId: string,
+    courseId: string,
+    moduleId: string,
+    quiz: Omit<Quiz, "id">
+  ) => {
+    setCourses(
+      courses.map((course) => {
+        if (course.id === courseId && course.instructorId === instructorId) {
+          return {
+            ...course,
+            modules: course.modules.map((module) => {
+              if (module.id === moduleId) {
+                return {
+                  ...module,
+                  quizzes: [
+                    ...module.quizzes,
+                    { ...quiz, id: `q${Date.now()}` }
+                  ]
+                };
+              }
+              return module;
+            })
+          };
+        }
+        return course;
+      })
+    );
+  };
+
+  const toggleModuleCompletion = (userId: string, courseId: string, moduleId: string): string | null => {
+    let newlyEarnedCourseBadgeId: string | null = null;
+
+    setEnrollments(
+      enrollments.map((enrollment) => {
+        if (enrollment.userId === userId && enrollment.courseId === courseId) {
+          const course = courses.find(c => c.id === courseId);
+          if (!course) return enrollment;
+
+          let updatedCompletedModules: string[];
+          const isCurrentlyCompleted = enrollment.completedModules.includes(moduleId);
+
+          if (isCurrentlyCompleted) {
+            updatedCompletedModules = enrollment.completedModules.filter(id => id !== moduleId);
+          } else {
+            updatedCompletedModules = [...enrollment.completedModules, moduleId];
+            if (updatedCompletedModules.length === course.modules.length && course.modules.length > 0) {
+              newlyEarnedCourseBadgeId = 'b3';
+              console.log(`Course "${course.title}" completed by user ${userId}! Award badge 'b3'.`);
+            }
+          }
+
+          const totalModules = course.modules.length;
+          const newProgress = totalModules > 0
+            ? Math.round((updatedCompletedModules.length / totalModules) * 100)
+            : 0;
+
+          return {
+            ...enrollment,
+            completedModules: updatedCompletedModules,
+            progress: newProgress,
+          };
+        }
+        return enrollment;
+      })
+    );
+
+    return newlyEarnedCourseBadgeId;
+  };
 
   return (
     <CourseContext.Provider
@@ -347,7 +423,9 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
         getCoursesByInstructor,
         getCourseStudents,
         addResource,
-
+        addQuiz,
+        updateProgress,
+        toggleModuleCompletion
       }}
     >
       {children}
@@ -362,4 +440,3 @@ export const useCourses = () => {
   }
   return context;
 };
-

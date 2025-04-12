@@ -13,14 +13,19 @@ import { Progress } from "@/components/ui/progress";
 interface ModuleAccordionProps {
   modules: Module[];
   completedModules?: string[];
+}
 
+const ModuleAccordion: React.FC<ModuleAccordionProps> = ({ 
+  modules, 
+  completedModules = [] 
+}) => {
   return (
     <Accordion type="multiple" className="w-full">
       {modules.map((module) => {
         const isCompleted = completedModules.includes(module.id);
 
         const handleModuleClick = () => {
-
+          // Handle module click logic here
         };
 
         return (
@@ -64,7 +69,6 @@ interface ModuleAccordionProps {
                   </div>
                 </div>
               )}
-
 
               {!isCompleted && (
                 <div className="mt-4">
