@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
@@ -7,24 +6,30 @@ import {
   SidebarContent, 
   SidebarGroup, 
   SidebarGroupContent, 
-  SidebarGroupLabel, 
-  SidebarMenu, 
-  SidebarMenuButton, 
-  SidebarMenuItem 
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarTrigger // Import SidebarTrigger
 } from "@/components/ui/sidebar";
-import { 
-  BarChart3, 
+import {
+  BarChart3,
   BookOpen, 
   FileText, 
   Home, 
   LogOut, 
   Settings, 
   UserPlus, 
-  Users, 
-  Video 
+  Users,
+  Video,
+  Puzzle // Import Puzzle icon
 } from "lucide-react";
 
-const AppSidebar = () => {
+interface AppSidebarProps {
+  openPuzzleModal: () => void; // Add prop type
+}
+
+const AppSidebar = ({ openPuzzleModal }: AppSidebarProps) => { // Destructure prop
   const { currentUser, logout } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,17 +46,16 @@ const AppSidebar = () => {
     switch (currentUser.role) {
       case "student":
         return [
-          { title: "Dashboard", icon: Home, path: "/student/dashboard" },
-          { title: "My Courses", icon: BookOpen, path: "/student/courses" },
-          { title: "Resources", icon: FileText, path: "/student/resources" },
-          { title: "Assignments", icon: FileText, path: "/student/assignments" },
+          { title: "Dashboard", icon: Home, path: "/student/dashboard", action: () => navigate("/student/dashboard") },
+          { title: "My Courses", icon: BookOpen, path: "/student/courses", action: () => navigate("/student/courses") },
+          { title: "Bible Puzzle", icon: Puzzle, path: "#puzzle", action: openPuzzleModal }, // Changed icon to Puzzle
         ];
       case "instructor":
+        // Keep instructor/admin links as they were, or add actions if needed
         return [
           { title: "Dashboard", icon: Home, path: "/instructor/dashboard" },
           { title: "My Courses", icon: BookOpen, path: "/instructor/courses" },
-          { title: "Student Progress", icon: BarChart3, path: "/instructor/courses/:courseId/progress" },
-          { title: "Resources", icon: FileText, path: "/instructor/resources" },
+          { title: "Student Progress", icon: BarChart3, path: "/instructor/students" }, // Updated to match correct path
         ];
       case "admin":
         return [
@@ -70,11 +74,13 @@ const AppSidebar = () => {
   return (
     <Sidebar>
       <SidebarContent>
-        <div className="p-4">
-          <div className="flex items-center justify-center mb-6">
-            <h1 className="text-xl font-bold text-lms-purple">EduVerse LMS</h1>
-          </div>
+        {/* Header with Title and Collapse Trigger */}
+        <div className="flex items-center justify-between p-4 mb-4 border-b">
+           <h1 className="text-xl font-bold text-lms-purple">EduVerse</h1>
+           {/* Add the trigger button */}
+           <SidebarTrigger className="text-gray-600 hover:text-gray-900" />
         </div>
+
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -82,16 +88,16 @@ const AppSidebar = () => {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
-                    asChild
-                    className={location.pathname === item.path ? "bg-sidebar-accent" : ""}
+                    // Use 'asChild' only if the button itself is handling navigation/action
+                    // For puzzle, the button itself triggers the action, no need for asChild or inner button
+                    className={item.path === "#puzzle" ? "" : (location.pathname === item.path ? "bg-sidebar-accent" : "")}
+                    onClick={item.action} // Use the defined action
                   >
-                    <button 
-                      onClick={() => navigate(item.path)}
-                      className="w-full flex items-center"
-                    >
-                      <item.icon className="mr-2 h-5 w-5" />
-                      <span>{item.title}</span>
-                    </button>
+                     {/* Keep button structure for consistency, but action is on SidebarMenuButton */}
+                     <div className="w-full flex items-center">
+                       <item.icon className="mr-2 h-5 w-5" />
+                       <span>{item.title}</span>
+                     </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
