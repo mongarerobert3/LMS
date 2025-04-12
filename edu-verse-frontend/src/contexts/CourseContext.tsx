@@ -4,18 +4,36 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 export interface Resource {
   id: string;
   title: string;
-  type: "pdf" | "video";
-  url: string;
+  type: "pdf" | "video" | "file" | "link";
+  url?: string;
+  filePath?: string;
   moduleId: string;
 }
 
 export interface Assignment {
   id: string;
   title: string;
-  description: string;
   dueDate: string;
-  moduleId: string;
   points: number;
+  type: 'file' | 'text';
+  prompt?: string;
+  filePath?: string;
+  moduleId: string;
+  description?: string;
+}
+
+export interface Quiz {
+  id: string;
+  title: string;
+  questions: {
+    id: string;
+    text: string;
+    options: {
+      id: string;
+      text: string;
+      isCorrect: boolean;
+    }[];
+  }[];
 }
 
 export interface Module {
@@ -23,6 +41,7 @@ export interface Module {
   title: string;
   resources: Resource[];
   assignments: Assignment[];
+  quizzes: Quiz[];
 }
 
 export interface Enrollment {
@@ -46,13 +65,23 @@ export interface Course {
   enrollments: Enrollment[];
 }
 
+interface Student {
+  id: string;
+  name: string;
+  email: string;
+  lastActivity?: string;
+  completedModules: string[];
+}
+
 interface CourseContextType {
   courses: Course[];
   enrollments: Enrollment[];
   enrollInCourse: (userId: string, courseId: string) => void;
   getEnrolledCourses: (userId: string) => Course[];
   getCoursesByInstructor: (instructorId: string) => Course[];
+  getCourseStudents: (courseId: string) => Student[];
   addResource: (instructorId: string, courseId: string, moduleId: string, resource: Omit<Resource, "id">) => void;
+  addQuiz: (instructorId: string, courseId: string, moduleId: string, quiz: Omit<Quiz, "id">) => void;
   updateProgress: (userId: string, courseId: string, progress: number, completedModuleId?: string) => void;
   toggleModuleCompletion: (userId: string, courseId: string, moduleId: string) => string | null; // Return potential badge ID or null
 }
@@ -96,9 +125,11 @@ const mockCourses: Course[] = [
             description: "Build a simple webpage with at least 5 different HTML elements.",
             dueDate: "2025-05-01",
             moduleId: "m1",
-            points: 10
+            points: 10,
+            type: 'file'
           }
-        ]
+        ],
+        quizzes: []
       },
       {
         id: "m2",
@@ -119,9 +150,11 @@ const mockCourses: Course[] = [
             description: "Add CSS styling to your HTML webpage from the previous assignment.",
             dueDate: "2025-05-15",
             moduleId: "m2",
-            points: 15
+            points: 15,
+            type: 'file'
           }
-        ]
+        ],
+        quizzes: []
       }
     ],
     enrollments: []
@@ -154,9 +187,11 @@ const mockCourses: Course[] = [
             description: "Convert an existing JavaScript codebase to use ES6 features.",
             dueDate: "2025-06-01",
             moduleId: "m3",
-            points: 20
+            points: 20,
+            type: 'file'
           }
-        ]
+        ],
+        quizzes: []
       }
     ],
     enrollments: []
@@ -189,9 +224,11 @@ const mockCourses: Course[] = [
             description: "Build a reusable React component with props and state.",
             dueDate: "2025-06-15",
             moduleId: "m4",
-            points: 15
+            points: 15,
+            type: 'file'
           }
-        ]
+        ],
+        quizzes: []
       }
     ],
     enrollments: []
@@ -299,53 +336,6 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const toggleModuleCompletion = (userId: string, courseId: string, moduleId: string): string | null => {
-    let newlyEarnedCourseBadgeId: string | null = null; // Store ID of badge earned by completing the course
-
-    setEnrollments(
-      enrollments.map((enrollment) => {
-        if (enrollment.userId === userId && enrollment.courseId === courseId) {
-          const course = courses.find(c => c.id === courseId);
-          if (!course) return enrollment;
-
-          let updatedCompletedModules: string[];
-          const isCurrentlyCompleted = enrollment.completedModules.includes(moduleId);
-
-          if (isCurrentlyCompleted) {
-            // Mark as incomplete
-            updatedCompletedModules = enrollment.completedModules.filter(id => id !== moduleId);
-          } else {
-            // Mark as complete
-            updatedCompletedModules = [...enrollment.completedModules, moduleId];
-            // Check if this completion finishes the course
-            if (updatedCompletedModules.length === course.modules.length && course.modules.length > 0) {
-               // Award "Completed in Christ" badge (ID 'b3')
-               newlyEarnedCourseBadgeId = 'b3';
-               console.log(`Course "${course.title}" completed by user ${userId}! Award badge 'b3'.`);
-               // In a real app, you'd call a function here to update the user's badge status persistently.
-            }
-          }
-
-          const totalModules = course.modules.length;
-          const newProgress = totalModules > 0
-            ? Math.round((updatedCompletedModules.length / totalModules) * 100)
-            : 0;
-
-          return {
-            ...enrollment,
-            completedModules: updatedCompletedModules,
-            progress: newProgress,
-          };
-        }
-        return enrollment;
-      })
-    );
-
-     // This state update happens asynchronously, so we return the badge ID directly
-     // if it was determined within the synchronous part of the map.
-     return newlyEarnedCourseBadgeId;
-  };
-
 
   return (
     <CourseContext.Provider
@@ -355,9 +345,9 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
         enrollInCourse,
         getEnrolledCourses,
         getCoursesByInstructor,
+        getCourseStudents,
         addResource,
-        updateProgress,
-        toggleModuleCompletion, // Updated function name
+
       }}
     >
       {children}
@@ -372,3 +362,4 @@ export const useCourses = () => {
   }
   return context;
 };
+

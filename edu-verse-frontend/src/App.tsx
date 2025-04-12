@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +20,9 @@ import StudentSettings from "./pages/student/StudentSettings"; // Import Setting
 
 // Instructor pages
 import InstructorDashboard from "./pages/instructor/InstructorDashboard";
+import InstructorCourses from "./pages/instructor/InstructorCourses"; // Added import
+import InstructorCourseDetail from "./pages/instructor/InstructorCourseDetail";
+import InstructorProgress from "./pages/instructor/InstructorProgress";
 import InstructorResources from "./pages/instructor/InstructorResources";
 
 // Admin pages
@@ -54,15 +56,7 @@ const AppContent = () => {
             {/* Auth routes */}
             <Route path="/login" element={<Login />} />
 
-                {/* Student routes */}
-                <Route path="/student/dashboard" element={<StudentDashboard />} />
-                <Route path="/student/courses" element={<StudentCourses />} />
-                <Route path="/student/courses/:courseId" element={<StudentCourseDetail />} />
-                <Route path="/student/courses/:courseId/modules/:moduleId" element={<StudentModuleView />} />
-                <Route path="/student/settings" element={<StudentSettings />} /> {/* Add route for settings */}
-                
-                {/* Instructor routes */}
-                <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
+
             <Route path="/instructor/resources" element={<InstructorResources />} />
             
             {/* Admin routes */}

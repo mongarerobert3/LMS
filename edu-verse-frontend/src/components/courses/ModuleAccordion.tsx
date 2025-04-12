@@ -1,4 +1,3 @@
-
 import React from "react";
 import { 
   Accordion, 
@@ -14,17 +13,14 @@ import { Progress } from "@/components/ui/progress";
 interface ModuleAccordionProps {
   modules: Module[];
   completedModules?: string[];
-  setSelectedModule: (module: Module | null) => void;
-}
 
-const ModuleAccordion = ({ modules, completedModules = [], setSelectedModule }: ModuleAccordionProps) => {
   return (
     <Accordion type="multiple" className="w-full">
       {modules.map((module) => {
         const isCompleted = completedModules.includes(module.id);
 
         const handleModuleClick = () => {
-          setSelectedModule(module);
+
         };
 
         return (
@@ -41,7 +37,8 @@ const ModuleAccordion = ({ modules, completedModules = [], setSelectedModule }: 
                 </div>
                 <div className="flex items-center text-sm text-gray-500">
                   <span className="mr-2">{module.resources.length} resources</span>
-                  <span>{module.assignments.length} assignments</span>
+                  <span className="mr-2">{module.assignments.length} assignments</span>
+                  <span>{module.quizzes.length} quizzes</span>
                 </div>
               </div>
             </AccordionTrigger>
@@ -67,6 +64,7 @@ const ModuleAccordion = ({ modules, completedModules = [], setSelectedModule }: 
                   </div>
                 </div>
               )}
+
 
               {!isCompleted && (
                 <div className="mt-4">

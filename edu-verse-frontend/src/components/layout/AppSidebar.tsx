@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
@@ -56,7 +55,7 @@ const AppSidebar = ({ openPuzzleModal }: AppSidebarProps) => { // Destructure pr
         return [
           { title: "Dashboard", icon: Home, path: "/instructor/dashboard" },
           { title: "My Courses", icon: BookOpen, path: "/instructor/courses" },
-          { title: "Student Progress", icon: BarChart3, path: "/instructor/students" },
+
         ];
       case "admin":
         return [
